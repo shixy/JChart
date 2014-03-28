@@ -203,9 +203,15 @@ window.JChart = {
         }
         return o;
     },
-    each : function(array,fn){
+    //只对array有效
+    each : function(array,fn,context){
         for(var i = 0,len=array.length;i<len;i++){
-            fn.call(null,i,array[i]);
+            var result = fn.call(context,array[i],i,array);
+            if(result === true){
+                continue;
+            }else if(result === false){
+                break;
+            }
         }
     },
     tmpl : (function(){

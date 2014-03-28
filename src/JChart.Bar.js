@@ -66,25 +66,25 @@
         }
 
         this.drawBars = function(animPc){
-            var ctx = _this.ctx,config = _this.config,dataset = _this.data.datasets,scale = _this.scaleData;
+            var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
             ctx.lineWidth = config.barStrokeWidth;
-            for (var i=0; i<dataset.length; i++){
-                ctx.fillStyle = dataset[i].fillColor;
-                ctx.strokeStyle = dataset[i].strokeColor;
-                for (var j=0; j<dataset[i].data.length; j++){
+            _.each(_this.data.datasets,function(set,i){
+                ctx.fillStyle = set.fillColor;
+                ctx.strokeStyle = set.strokeColor;
+                _.each(set.data,function(d,j){
                     var barOffset = scale.x + config.barValueSpacing + scale.xHop*j + scale.barWidth*i + config.barDatasetSpacing*i + config.barStrokeWidth*i;
                     ctx.beginPath();
                     ctx.moveTo(barOffset, scale.y);
-                    ctx.lineTo(barOffset, scale.y - animPc*_this.calculateOffset(dataset[i].data[j],scale.yScaleValue,scale.yHop)+(config.barStrokeWidth/2));
-                    ctx.lineTo(barOffset + scale.barWidth, scale.y - animPc*_this.calculateOffset(dataset[i].data[j],scale.yScaleValue,scale.yHop)+(config.barStrokeWidth/2));
+                    ctx.lineTo(barOffset, scale.y - animPc*_this.calculateOffset(d,scale.yScaleValue,scale.yHop)+(config.barStrokeWidth/2));
+                    ctx.lineTo(barOffset + scale.barWidth, scale.y - animPc*_this.calculateOffset(d,scale.yScaleValue,scale.yHop)+(config.barStrokeWidth/2));
                     ctx.lineTo(barOffset + scale.barWidth, scale.y);
                     if(config.barShowStroke){
                         ctx.stroke();
                     }
                     ctx.closePath();
                     ctx.fill();
-                }
-            }
+                });
+            })
         }
         //初始化参数
         if(cfg)this.initial(cfg);

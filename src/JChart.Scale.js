@@ -27,7 +27,7 @@
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
             _this.ctx.font = _this.config.scaleFontStyle + " " + _this.config.scaleFontSize+"px " + _this.config.scaleFontFamily;
             //找出最宽的label
-            _.each(_this.data.labels,function(i,o){
+            _.each(_this.data.labels,function(o){
                 var textLength = _this.ctx.measureText(o).width;
                 widestXLabel = (textLength > widestXLabel)? textLength : widestXLabel;
             })
@@ -60,8 +60,8 @@
         this.getValueBounds =function() {
             var upperValue = Number.MIN_VALUE;
             var lowerValue = Number.MAX_VALUE;
-            _.each(_this.data.datasets,function(i,o){
-                _.each(o.data,function(j,obj){
+            _.each(_this.data.datasets,function(o){
+                _.each(o.data,function(obj){
                     if(obj > upperValue){upperValue = obj};
                     if (obj < lowerValue) { lowerValue = obj};
                 })
@@ -156,7 +156,7 @@
             if (config.scaleShowLabels){
                 _this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
                 //找出Y轴刻度的最宽值
-                _.each(scale.yScaleValue.labels,function(i,o){
+                _.each(scale.yScaleValue.labels,function(o){
                     var measuredText = _this.ctx.measureText(o).width;
                     longestText = (measuredText > longestText)? measuredText : longestText;
                 })
@@ -199,7 +199,7 @@
                 ctx.textAlign = "center";
             }
             ctx.fillStyle = config.scaleFontColor;
-            for (var i=0; i<_this.data.labels.length; i++){
+            _.each(_this.data.labels,function(label,i){
                 ctx.save();
                 var labelX = scale.x + i*scale.xHop,labelY = scale.y + config.scaleFontSize;
                 if(_this._type_ == 'bar'){
@@ -208,10 +208,10 @@
                 if (scale.labelRotate > 0){
                     ctx.translate(labelX,labelY);
                     ctx.rotate(-(scale.labelRotate * (Math.PI/180)));
-                    ctx.fillText(_this.data.labels[i], 0,0);
+                    ctx.fillText(label, 0,0);
                     ctx.restore();
                 }else{
-                    ctx.fillText(_this.data.labels[i], labelX,labelY+3);
+                    ctx.fillText(label, labelX,labelY+3);
                 }
 
                 ctx.beginPath();
@@ -230,7 +230,7 @@
                     }
                 }
                 ctx.stroke();
-            }
+            })
 
             //画Y轴
             ctx.lineWidth = config.scaleLineWidth;
@@ -355,7 +355,7 @@
                 max = len;
             }
             newdata.labels = newdata.labels.slice(min,max);
-            _.each(newdata.datasets,function(i,d){
+            _.each(newdata.datasets,function(d){
                 d.data = d.data.slice(min,max)
             });
             return newdata;

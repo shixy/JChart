@@ -41,7 +41,7 @@
          */
         function calcAngel(){
             var angle = 0;
-            _.each(_this.data,function(i,d){
+            _.each(_this.data,function(d){
                 d['startAngle'] = angle;
                 angle = angle + (d.value/segmentTotal) * (Math.PI*2);
                 d['endAngle'] = angle;
@@ -62,7 +62,7 @@
             if (_this.config.animation) {
                 animPercent = percent;
             }
-            _.each(_this.data,function(i){
+            _.each(_this.data,function(d,i){
                 drawSegment(i,animPercent,type);
             });
             if(_this.config.isDount && _this.config.dountText){
@@ -154,7 +154,7 @@
                 var clickAngle = Math.atan2(y, x)-startAngle;
                 if ( clickAngle < 0 ) clickAngle = 2 * Math.PI + clickAngle;
                 if(clickAngle > 2 * Math.PI) clickAngle = clickAngle - 2 * Math.PI;
-                _.each(_this.data,function(i,d){//判断属于哪个扇形
+                _.each(_this.data,function(d,i){//判断属于哪个扇形
                     if ( clickAngle >= d['startAngle'] && clickAngle <= d['endAngle'] ) {
                         if(!_this.trigger('click',[i,d]))return;
                         if(type == 'rotate'){
@@ -222,7 +222,7 @@
         this.init = function(){
             //计算半径(留10个像素)
             pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
-            _.each(_this.data,function(i,d){
+            _.each(_this.data,function(d){
                 segmentTotal += d.value;
             });
             calcAngel();

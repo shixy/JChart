@@ -9,7 +9,8 @@
     <script type="text/javascript" src="../src/JChart.Pie.js"></script>
 </head>
 <body>
-<canvas id="canvas" height="450" width="450"></canvas>
+<canvas id="canvas1" height="450" width="450"></canvas>
+<canvas id="canvas2" height="450" width="450" style="margin-top: 10px;"></canvas>
 <script type="text/javascript">
     var pieData = [
         {
@@ -25,24 +26,36 @@
             color : "#69D2E7"
         }
     ];
-    var p = new JChart.Pie('canvas',pieData);
-    p.on('click',function(i,data){
+    var p1 = new JChart.Pie(pieData,{
+        id : 'canvas1'
+    });
+    p1.on('click',function(i,data){
         console.log('点击了第'+i+'个扇形');
         return true;
     })
-    p.on('animationComplete',function(){
+    p1.on('animationComplete',function(){
         console.log('动画执行完毕');
     })
-    p.on('rotate',function(i,data){
+    p1.on('rotate',function(i,data){
 		console.log('第'+i+'个扇形已经旋转到6点钟方向');
-		p.pullOut(i);
+		//p.pullOut(i);
 	});
-	p.on('pushIn',function(i,data){
+	p1.on('pushIn',function(i,data){
 		console.log('所有弹出扇形已经被收回');
 	});
-	p.on('pullOut',function(i,data){
+	p1.on('pullOut',function(i,data){
 		console.log('第'+i+'个扇形已经弹出');
 	});
+    var p2 = new JChart.Pie(pieData,{
+        id : 'canvas2',
+        clickType : 'rotate',
+        isDount : true,
+        dountText : 'CPU'
+    });
+    p2.on('click',function(i,data){
+        p2.setDountText(data.value);
+        return true;
+    });
 </script>
 </body>
 </html>

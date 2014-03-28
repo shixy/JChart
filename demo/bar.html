@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bar</title>
+    <meta charset="utf-8">
+    <meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+    <script type="text/javascript" src="../src/JChart.js"></script>
+    <script type="text/javascript" src="../src/JChart.Chart.js"></script>
+    <script type="text/javascript" src="../src/JChart.Scale.js"></script>
+    <script type="text/javascript" src="../src/JChart.Bar.js"></script>
+</head>
+<body>
+<canvas id="canvas1" height="200" width="600"></canvas>
+<script type="text/javascript">
+    var data = {
+        labels : ["一月","二月","三月","四月","五月","六月","七月",'八月','9月','10月','11月','12月','9月','10月','11月','12月','9月','10月','11月','12月','9月','10月','11月','12月','9月','10月','11月','12月'],
+        datasets : [
+            {
+                fillColor : "rgba(220,220,220,0.5)",
+                strokeColor : "rgba(220,220,220,1)",
+                data : [65,59,90,81,56,55,40,20,3,20,10,60,65,59,90,81,56,55,40,20,3,20,10,60,10,60,65,59]
+            },
+            {
+                fillColor : "rgba(151,187,205,0.5)",
+                strokeColor : "rgba(151,187,205,1)",
+                data : [28,48,40,19,96,27,100,40,40,70,10,89,28,48,40,19,96,27,100,40,40,70,10,89,28,48,40,19,96]
+            }
+        ]
+    }
+    var bar = new JChart.Bar(data,{
+        id : 'canvas1'
+    });
+    bar.on('doubleTap',function(){
+        alert('double');
+    });
+
+</script>
+</body>
+</html>

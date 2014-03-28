@@ -167,19 +167,80 @@ window.JChart = {
         }
         return valueToCap;
     },
-    extend : function(superClass,subClass) {
-        var F=function(){};
-        F.prototype=superClass.prototype;
-        subClass.prototype.constructor=subClass;
-        subClass.prototype=new F();
-        subClass.prototype.constructor=subClass;
-        return subClass;
+    getDecimalPlaces : function(num){
+        if (num%1!=0){
+            return num.toString().split(".")[1].length
+        }
+        else{
+            return 0;
+        }
     },
     mergeObj : function(dest,source){
         for(var p in source){
             dest[p] = source[p];
         }
-    }
+    },
+    clone : function(obj){
+        var o;
+        if (typeof obj == "object") {
+            if (obj === null) {
+                o = null;
+            } else {
+                if (obj instanceof Array) {
+                    o = [];
+                    for (var i = 0, len = obj.length; i < len; i++) {
+                        o.push(this.clone(obj[i]));
+                    }
+                } else {
+                    o = {};
+                    for (var j in obj) {
+                        o[j] = this.clone(obj[j]);
+                    }
+                }
+            }
+        } else {
+            o = obj;
+        }
+        return o;
+    },
+    each : function(array,fn){
+        for(var i = 0,len=array.length;i<len;i++){
+            fn.call(null,i,array[i]);
+        }
+    },
+    tmpl : (function(){
+        //Javascript micro templating by John Resig - source at http://ejohn.org/blog/javascript-micro-templating/
+        var cache = {};
+        function tmpl(str, data){
+            // Figure out if we're getting a template, or if we need to
+            // load the template - and be sure to cache the result.
+            var fn = !/\W/.test(str) ?
+                cache[str] = cache[str] ||
+                    tmpl(document.getElementById(str).innerHTML) :
 
+                // Generate a reusable function that will serve as a template
+                // generator (and which will be cached).
+                new Function("obj",
+                    "var p=[],print=function(){p.push.apply(p,arguments);};" +
 
+                        // Introduce the data as local variables using with(){}
+                        "with(obj){p.push('" +
+
+                        // Convert the template into pure JavaScript
+                        str
+                            .replace(/[\r\t\n]/g, " ")
+                            .split("<%").join("\t")
+                            .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+                            .replace(/\t=(.*?)%>/g, "',$1,'")
+                            .split("\t").join("');")
+                            .split("%>").join("p.push('")
+                            .split("\r").join("\\'")
+                        + "');}return p.join('');");
+
+            // Provide some basic currying to the user
+            return data ? fn( data ) : fn;
+        };
+        return tmpl;
+    })()
 }
+

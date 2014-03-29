@@ -125,7 +125,7 @@
             var y = pageY - _this.ctx.canvas.offsetTop;
             var p = isInPointRange(x,y);
             if(p){
-                _this.trigger('tap',[_this.data.datasets[p[3]].data[p[2]],p[2],p[3]]);
+                _this.trigger('tap.point',[_this.data.datasets[p[3]].data[p[2]],p[2],p[3]]);
             }
         }
 

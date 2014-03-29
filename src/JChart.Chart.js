@@ -142,11 +142,13 @@
                     tapTimeout = setTimeout(function() {
                         if (touch.isDoubleTap) {
                             _this.trigger('_doubleTap',[touch.x1,touch.y1]);
+                            _this.trigger('doubleTap',[touch.x1,touch.y1]);
                             touch = {};
                         }else {
                             touchTimeout = setTimeout(function(){
                                 touchTimeout = null;
                                 _this.trigger('_tap',[touch.x1,touch.y1]);
+                                _this.trigger('tap',[touch.x1,touch.y1]);
                                 touch = {};
                             }, 250);
                         }
@@ -158,6 +160,7 @@
                 longTapTimeout = null;
                 if (touch.last) {
                     _this.trigger('_longTap',[touch.x1,touch.y1]);
+                    _this.trigger('longTap',[touch.x1,touch.y1]);
                     touch = {};
                 }
             }

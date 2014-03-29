@@ -1,7 +1,7 @@
 (function(_){
     function Line(data,cfg){
         _.Scale.apply(this);
-        var pointRanges;//记录线的节点位置 (for click 事件)
+        var pointRanges = [];//记录线的节点位置 (for click 事件)
         this._type_ = 'line';
         var _this = this;
         //配置项
@@ -131,7 +131,6 @@
 
         function isInPointRange(x,y){
             var point,pb = _this.config.pointClickBounds;
-            pointRanges = pointRanges || [];
             _.each(pointRanges,function(p){
                 if(x >= p[0] - pb && x <= p[0] + pb && y >= p[1]-pb && y <= p[1] + pb){
                     point = p;

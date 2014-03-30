@@ -1,4 +1,4 @@
-window.JChart = {
+window.JingleChart = JChart = {
     version : '0.1',
     animationOptions : {
         linear : function (t){
@@ -248,5 +248,5 @@ window.JChart = {
         };
         return tmpl;
     })()
-}
+};
 

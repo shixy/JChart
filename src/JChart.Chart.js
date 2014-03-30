@@ -1,4 +1,4 @@
-(function(_){
+;(function(_){
     var Chart = function(){
         this.events = {};
         /**
@@ -9,7 +9,7 @@
             if(typeof cfg == 'string'){
                 this.config.id = cfg;
             }else{
-                JChart.mergeObj(this.config,cfg);
+                _.mergeObj(this.config,cfg);
             }
             this.ctx = document.getElementById(this.config.id).getContext('2d');
             var canvas = this.ctx.canvas;
@@ -34,14 +34,23 @@
         /**
          * 更新
          */
-        this.update = function(data,config){
-            this.data = data;
+        this.refresh = function(config){
             if(config){
-                this.config = JChart.mergeObj(this.config,config);
+               _.mergeObj(this.config,config);
             }
             this.init();
-
         };
+        /**
+         * 加载数据
+         * @param data
+         * @param config
+         */
+        this.load = function(data,config){
+            this.data = data;
+            config && _.mergeObj(this.config,config);
+            this.clear();
+            this.init(true);
+        }
         /**
          * 动画函数
          * @param drawScale 缩放动画 函数
@@ -104,10 +113,9 @@
                 return null;
             }
         };
-        //sprite from zepto touch.js
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
-            var touch = {},touchTimeout, tapTimeout,longTapDelay = 750, longTapTimeout,now, delta,
+            var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,
                 _this = this;
 
             this.ctx.canvas.addEventListener('mousedown',touchstart);
@@ -120,39 +128,40 @@
                 e = e.touches ? e.touches[0] : e;
                 delta = now - (touch.last || now);
                 touchTimeout && clearTimeout(touchTimeout);
-                touch.x1 = e.pageX;
-                touch.y1 = e.pageY;
+                touch.x1 = e.offsetX;
+                touch.y1 = e.offsetY;
                 if (delta > 0 && delta <= 250) touch.isDoubleTap = true;
                 touch.last = now;
                 longTapTimeout = setTimeout(longTap, longTapDelay);
             }
             function touchmove(e){
                 e = e.touches ? e.touches[0] : e;
-                touch.x2 = e.pageX;
-                touch.y2 = e.pageY;
-                cancelLongTap()
+                touch.x2 = e.offsetX;
+                touch.y2 = e.offsetY;
                 if (Math.abs(touch.x1 - touch.x2) > 15){
-                    //e.preventDefault();
+                    e.preventDefault();
                     cancelAll();
                 }
             }
             function touchend(e){
                 cancelLongTap();
                 if ('last' in touch){
-                    tapTimeout = setTimeout(function() {
-                        if (touch.isDoubleTap) {
-                            _this.trigger('_doubleTap',[touch.x1,touch.y1]);
-                            _this.trigger('doubleTap',[touch.x1,touch.y1]);
+                    //tap事件，单击/双击都会触发，0延迟，建议在不使用doubleTap的环境中使用，如果要同时使用tap和doubleTap，请使用singleTap
+                    _this.trigger('_tap',[touch.x1,touch.y1]);
+                    _this.trigger('tap',[touch.x1,touch.y1]);
+                    if (touch.isDoubleTap) {
+                        cancelAll();
+                        _this.trigger('_doubleTap',[touch.x1,touch.y1]);
+                        _this.trigger('doubleTap',[touch.x1,touch.y1]);
+                    }else {
+                        touchTimeout = setTimeout(function(){
+                            touchTimeout = null;
+                            _this.trigger('_singleTap',[touch.x1,touch.y1]);
+                            _this.trigger('singleTap',[touch.x1,touch.y1]);
                             touch = {};
-                        }else {
-                            touchTimeout = setTimeout(function(){
-                                touchTimeout = null;
-                                _this.trigger('_tap',[touch.x1,touch.y1]);
-                                _this.trigger('tap',[touch.x1,touch.y1]);
-                                touch = {};
-                            }, 250);
-                        }
-                    }, 0);
+                        }, 250)
+
+                    }
                 };
             }
 
@@ -172,9 +181,8 @@
 
             function cancelAll() {
                 if (touchTimeout) clearTimeout(touchTimeout);
-                if (tapTimeout) clearTimeout(tapTimeout);
                 if (longTapTimeout) clearTimeout(longTapTimeout);
-                touchTimeout = tapTimeout = swipeTimeout = longTapTimeout = null;
+                touchTimeout = longTapTimeout = null;
                 touch = {};
             }
         }

@@ -1,4 +1,4 @@
-(function(_){
+;(function(_){
     /**
      * 抽象类-刻度值
      * 用来初始化XY轴各项数据
@@ -27,13 +27,13 @@
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
             _this.ctx.font = _this.config.scaleFontStyle + " " + _this.config.scaleFontSize+"px " + _this.config.scaleFontFamily;
             //找出最宽的label
-            _.each(_this.data.labels,function(o){
+            _.each(_this.chartData.labels,function(o){
                 var textLength = _this.ctx.measureText(o).width;
                 widestXLabel = (textLength > widestXLabel)? textLength : widestXLabel;
             })
-            if (_this.width/_this.data.labels.length < widestXLabel){
+            if (_this.width/_this.chartData.labels.length < widestXLabel){
                 labelRotate = 45;
-                if (_this.width/_this.data.labels.length < Math.cos(labelRotate) * widestXLabel){
+                if (_this.width/_this.chartData.labels.length < Math.cos(labelRotate) * widestXLabel){
                     labelRotate = 90;
                     maxSize -= widestXLabel;
                 }
@@ -60,7 +60,7 @@
         this.getValueBounds =function() {
             var upperValue = Number.MIN_VALUE;
             var lowerValue = Number.MAX_VALUE;
-            _.each(_this.data.datasets,function(o){
+            _.each(_this.chartData.datasets,function(o){
                 _.each(o.data,function(obj){
                     if(obj > upperValue){upperValue = obj};
                     if (obj < lowerValue) { lowerValue = obj};
@@ -166,11 +166,11 @@
             xAxisLength = _this.width - longestText - scale.widestXLabel;
 
             if(_this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
-                valueHop = Math.floor(xAxisLength/_this.data.labels.length);
-                var len = _this.data.datasets.length;
+                valueHop = Math.floor(xAxisLength/_this.chartData.labels.length);
+                var len = _this.chartData.datasets.length;
                 scale.barWidth = (valueHop - config.scaleGridLineWidth*2 - (config.barValueSpacing*2) - (config.barDatasetSpacing*len-1) - ((config.barStrokeWidth/2)*len-1))/len;
             }else{
-                valueHop = Math.floor(xAxisLength/(_this.data.labels.length-1));
+                valueHop = Math.floor(xAxisLength/(_this.chartData.labels.length-1));
             }
             x = _this.width-scale.widestXLabel/2-xAxisLength;
             y = scale.yHeight + config.scaleFontSize/2;
@@ -199,7 +199,7 @@
                 ctx.textAlign = "center";
             }
             ctx.fillStyle = config.scaleFontColor;
-            _.each(_this.data.labels,function(label,i){
+            _.each(_this.chartData.labels,function(label,i){
                 ctx.save();
                 var labelX = scale.x + i*scale.xHop,labelY = scale.y + config.scaleFontSize;
                 if(_this._type_ == 'bar'){
@@ -362,7 +362,7 @@
         }
 
 
-        this.bindDataGestureEvent = function(data){
+        this.bindDataGestureEvent = function(){
             var touchDistanceX,//手指滑动偏移量
                 startPosition,//触摸初始位置记录
                 dataOffset = 0,//数据偏移量
@@ -394,7 +394,7 @@
                     if(offset+dataNum > totalLen)return;
                     if(offset < 0)return;
                     currentOffset = offset;
-                    _this.load(_this.sliceData(data,offset,totalLen,dataNum));
+                    _this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
                 }
             }
             function touchend(event){

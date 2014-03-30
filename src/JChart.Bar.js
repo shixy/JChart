@@ -1,10 +1,11 @@
-(function(_){
+;(function(_){
     function Bar(data,cfg){
         _.Scale.apply(this);
         var barRanges = [];//记录柱状图的占据的位置
         this._type_ = 'bar';
         var _this = this;
-        this.data = data;
+        this.data = data;//所有的数据
+        this.chartData = null;//图表当前展示的数据
         //配置项
         this.config = {
             scaleOverlay : false,
@@ -41,27 +42,31 @@
          */
         this.bindEvents = function(){
             this.on('_tap',function(x,y){tapHandler(x,y,'tap.bar')});
-            this.on('_doubleTap',function(x,y){tapHandler(x,y,'doubleTap.bar')});
+            //this.on('_doubleTap',function(x,y){tapHandler(x,y,'doubleTap.bar')});
             this.on('_longTap',function(x,y){tapHandler(x,y,'longTap.bar')});
             if(this.config.datasetGesture){
-                this.bindDataGestureEvent(data);
+                this.bindDataGestureEvent();
             }
         }
         /**
          * 初始化部分元素值
          */
-        this.init = function(){
-            var _data = data;
-            if(_this.config.datasetGesture){
-                _data = _this.sliceData(data,0,data.labels.length,_this.config.datasetOffsetNumber);
+        this.init = function(noAnim){
+            if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetOffsetNumber){
+                this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetOffsetNumber);
+            }else{
+                this.chartData = this.data;
             }
-            this.data = _data;
-            _this.initScale();
-            _this.doAnim(_this.drawScale,_this.drawBars);
+            this.initScale();
+            if(noAnim){
+                this.drawScale();
+                this.drawBars(1);
+            }else{
+                this.doAnim(this.drawScale,this.drawBars);
+            }
         }
-
-        this.load = function(data){
-            this.data = data;
+        this.redraw = function(data){
+            this.chartData = data;
             this.clear();
             this.initScale();
             this.drawScale();
@@ -72,7 +77,7 @@
             if(animPc == 1)barRanges = [];
             var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
             ctx.lineWidth = config.barStrokeWidth;
-            _.each(_this.data.datasets,function(set,i){
+            _.each(_this.chartData.datasets,function(set,i){
                 ctx.fillStyle = set.fillColor;
                 ctx.strokeStyle = set.strokeColor;
                 _.each(set.data,function(d,j){
@@ -97,13 +102,10 @@
             })
         }
 
-        function tapHandler(pageX,pageY,event){
-            //计算手指在canvas中的位置
-            var x = pageX - _this.ctx.canvas.offsetLeft;
-            var y = pageY - _this.ctx.canvas.offsetTop;
+        function tapHandler(x,y,event){
             var p = isInBarRange(x,y);
             if(p){
-                _this.trigger(event,[_this.data.datasets[p[3]].data[p[2]],p[2],p[3]]);
+                _this.trigger(event,[_this.chartData.datasets[p[3]].data[p[2]],p[2],p[3]]);
             }
         }
 

@@ -1,8 +1,10 @@
-(function(_){
+;(function(_){
     function Line(data,cfg){
         _.Scale.apply(this);
         var pointRanges = [];//记录线的节点位置 (for click 事件)
         this._type_ = 'line';
+        this.data = data;
+        this.chartData = null;
         var _this = this;
         //配置项
         this.config = {
@@ -26,7 +28,7 @@
             pointDot : true,
             pointDotRadius : 4,
             pointDotStrokeWidth : 2,
-            pointClickBounds : 10,
+            pointClickBounds : 20,
             datasetStroke : true,
             datasetStrokeWidth : 2,
             datasetFill : true,
@@ -46,23 +48,28 @@
             //this.ctx.canvas.addEventListener('click',tapHandler);
             this.on('_tap',tapHandler);
             if(this.config.datasetGesture){
-                this.bindDataGestureEvent(data);
+                this.bindDataGestureEvent();
             }
         }
         /**
          * 初始化部分元素值
          */
-        this.init = function(){
-            var _data = data;
-            if(_this.config.datasetGesture){
-                _data = _this.sliceData(data,0,data.labels.length,_this.config.datasetOffsetNumber);
+        this.init = function(noAnim){
+            if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetOffsetNumber){
+                this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetOffsetNumber);
+            }else{
+                this.chartData = this.data;
             }
-            this.data = _data;
             _this.initScale();
-            _this.doAnim(_this.drawScale,_this.drawLines);
+            if(noAnim){
+                this.drawScale();
+                this.drawLines(1);
+            }else{
+                this.doAnim(this.drawScale,this.drawLines);
+            }
         }
-        this.load = function(data){
-            this.data = data;
+        this.redraw = function(data){
+            this.chartData = data;
             this.clear();
             this.initScale();
             this.drawScale();
@@ -70,7 +77,7 @@
         }
         this.drawLines = function(animPc){
             if(animPc == 1)pointRanges = [];
-            var ctx = _this.ctx,config = _this.config,dataset = _this.data.datasets,scale = _this.scaleData;
+            var ctx = _this.ctx,config = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
             _.each(dataset,function(set,i){
                 ctx.strokeStyle = set.strokeColor;
                 ctx.lineWidth = config.datasetStrokeWidth;
@@ -119,13 +126,10 @@
             }
         }
 
-        function tapHandler(pageX,pageY){
-            //计算手指在canvas中的位置
-            var x = pageX - _this.ctx.canvas.offsetLeft;
-            var y = pageY - _this.ctx.canvas.offsetTop;
+        function tapHandler(x,y){
             var p = isInPointRange(x,y);
             if(p){
-                _this.trigger('tap.point',[_this.data.datasets[p[3]].data[p[2]],p[2],p[3]]);
+                _this.trigger('tap.point',[_this.chartData.datasets[p[3]].data[p[2]],p[2],p[3]]);
             }
         }
 

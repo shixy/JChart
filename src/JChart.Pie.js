@@ -1,6 +1,7 @@
-(function(_){
+;(function(_){
     function Pie(data,cfg){
         _.Chart.apply(this);
+        var angleRanges;//记录每个扇形的起始角度（从0开始）
         var _this = this;
         this.data = data;
         var pieRadius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1;
@@ -41,10 +42,12 @@
          */
         function calcAngel(){
             var angle = 0;
-            _.each(_this.data,function(d){
-                d['startAngle'] = angle;
+            angleRanges = [];
+            _.each(_this.data,function(d,i){
+                var start = angle;
                 angle = angle + (d.value/segmentTotal) * (Math.PI*2);
-                d['endAngle'] = angle;
+                var end = angle;
+                angleRanges.push([start,end,d,i]);
             })
         }
 
@@ -62,8 +65,8 @@
             if (_this.config.animation) {
                 animPercent = percent;
             }
-            _.each(_this.data,function(d,i){
-                drawSegment(i,animPercent,type);
+            _.each(angleRanges,function(a){
+                drawSegment(a,animPercent,type);
             });
             if(_this.config.isDount && _this.config.dountText){
                 drawText();
@@ -73,9 +76,9 @@
         /**
          * 计算扇形真实的其实角度
          */
-        function calcSegmentAngle(d,percent,type){
-            var start =d.startAngle,
-                end = d.endAngle;
+        function calcSegmentAngle(range,percent,type){
+            var start = range[0],
+                end = range[1];
             if(type == 'rotate'){
                 //旋转
                 start = start + startAngle + rotateAngle*percent;
@@ -96,17 +99,17 @@
          * @param i
          * @param animPercent
          */
-        function drawSegment(i,percent,type){
+        function drawSegment(range,percent,type){
             var x = _this.width/2,
                 y = _this.height/ 2,
-                d = _this.data[i];
-            if(i == currentPullOutIndex){
-                var midAngle = (d.startAngle + d.endAngle)/2+startAngle;
+                index = range[3];
+            if(index == currentPullOutIndex){
+                var midAngle = (range[0] + range[1])/2+startAngle;
                 x += Math.cos(midAngle) * _this.config.pullOutDistance;
                 y += Math.sin(midAngle) * _this.config.pullOutDistance;
             }
-            var angle = calcSegmentAngle(d,percent,type);
-            drawPiePart(x,y,pieRadius,angle.start,angle.end,d);
+            var angle = calcSegmentAngle(range,percent,type);
+            drawPiePart(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
         }
 
         function drawPiePart(x,y,r,start,end,data){
@@ -132,40 +135,55 @@
          * 绑定canvas dom元素上的事件 如：click、touch
          */
         this.bindEvents = function(){
-            this.ctx.canvas.addEventListener('click',clickHandler);
+            this.on('_tap',function(x,y){tapHandler(x,y,'tap.pie')});
+            //暂时关闭doubleTap事件
+            //this.on('_doubleTap',function(x,y){tapHandler(x,y,'doubleTap.pie')});
+            this.on('_longTap',function(x,y){tapHandler(x,y,'longTap.pie')});
             //添加一个默认点击事件
-            this.on('click',function(){return true;})
+            this.on('tap.pie',function(){return true;})
         }
-        /**
-         * click handler
-         * 计算点击位置在图形中的所属
-         * @param event
-         */
-        function clickHandler(event){
+
+        function tapHandler(x,y,event){
             var type = _this.config.clickType;
-            var x = event.pageX - this.offsetLeft - _this.width/2;
-            var y = event.pageY - this.offsetTop - _this.height/2;
-            var distanceFromCentre = Math.sqrt( Math.pow( Math.abs(x), 2 ) + Math.pow( Math.abs(y), 2 ) );
-            var isInPie = (distanceFromCentre <= pieRadius);
-            if(isInPie && _this.config.isDount){
-                isInPie = (distanceFromCentre >= pieRadius*_this.config.dountRadiusPercent);
-            }
-            if (isInPie) {//点击在圆形内
-                var clickAngle = Math.atan2(y, x)-startAngle;
-                if ( clickAngle < 0 ) clickAngle = 2 * Math.PI + clickAngle;
-                if(clickAngle > 2 * Math.PI) clickAngle = clickAngle - 2 * Math.PI;
-                _.each(_this.data,function(d,i){//判断属于哪个扇形
-                    if ( clickAngle >= d['startAngle'] && clickAngle <= d['endAngle'] ) {
-                        if(!_this.trigger('click',[i,d]))return;
-                        if(type == 'rotate'){
-                            _this.rotate(i);
-                        }else if(type == 'pullOut'){
-                            _this.toggleSegment(i);
-                        }
-                        return;
+            var angle = isInSegment(x,y);
+            if(angle){
+                if(event == 'tap.pie'){//处理一些默认行为
+                    if(!_this.trigger(event,[angle[2],angle[3]]))return;
+                    if(type == 'rotate'){
+                        _this.rotate(angle[3]);
+                    }else if(type == 'pullOut'){
+                        _this.toggleSegment(angle[3]);
                     }
-                })
+                }else{
+                    _this.trigger(type,[angle[2],angle[3]]);
+                }
+
             }
+        }
+
+        function isInSegment(offsetX,offsetY){
+            var angle;
+            var x = offsetX - _this.width/2;
+            var y = offsetY - _this.height/2;
+            //距离圆点的距离
+            var dfc = Math.sqrt( Math.pow( Math.abs(x), 2 ) + Math.pow( Math.abs(y), 2 ) );
+            var isInPie = (dfc <= pieRadius);
+            if(isInPie && _this.config.isDount){//排除dount图中心区
+                isInPie = (dfc >= pieRadius*_this.config.dountRadiusPercent);
+            }
+            if(!isInPie)return;
+
+            var clickAngle = Math.atan2(y, x)-startAngle;
+            if ( clickAngle < 0 ) clickAngle = 2 * Math.PI + clickAngle;
+            if(clickAngle > 2 * Math.PI) clickAngle = clickAngle - 2 * Math.PI;
+
+            _.each(angleRanges,function(a){
+                if(clickAngle >= a[0] && clickAngle < a[1]){
+                    angle = a;
+                    return false;
+                }
+            });
+            return angle;
         }
 
         /**
@@ -202,7 +220,7 @@
          * @param i 扇形索引
          */
         this.rotate = function(i){
-            var middAngle = (_this.data[i].startAngle + _this.data[i].endAngle) / 2 + startAngle;
+            var middAngle = (angleRanges[i][0] + angleRanges[i][1]) / 2 + startAngle;
             var newRotateAngle = _this.config.rotateAngle-middAngle;
             if(_.isEqual(newRotateAngle,0))return;
             this.pushIn();
@@ -219,15 +237,25 @@
         /**
          * 初始化部分元素值
          */
-        this.init = function(){
+        this.init = function(noAnim){
             //计算半径(留10个像素)
             pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
             _.each(_this.data,function(d){
                 segmentTotal += d.value;
             });
             calcAngel();
-            this.doAnim(null,drawPie);
+            if(noAnim){
+                drawPie(1);
+            }else{
+                this.doAnim(null,drawPie);
+            }
             startAngle = _this.config.startAngle;
+        }
+
+        this.load = function(data){
+            this.data = data;
+            this.init(true);
+
         }
 
         function drawText(){
@@ -236,7 +264,7 @@
             ctx.textAlign = _this.config.dountTextAlign;
             ctx.font = _this.config.dountTextFont;
             ctx.fillStyle = _this.config.dountTextColor;
-            ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,pieRadius*2);
+            ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,pieRadius*_this.config.dountRadiusPercent);
         }
 
         //初始化参数

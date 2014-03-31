@@ -24,7 +24,7 @@
             //是否开启动画
             animation : true,
             //动画执行步数
-            animationSteps : 60,
+            animationSteps : 30,
             //动画效果
             animationEasing : "linear",
             //环形图
@@ -241,6 +241,7 @@
             //计算半径(留10个像素)
             pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
             segmentTotal = 0;
+            currentPullOutIndex = -1;
             _.each(_this.data,function(d){
                 segmentTotal += d.value;
             });

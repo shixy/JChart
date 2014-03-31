@@ -29,7 +29,7 @@
             barValueSpacing : 5,
             barDatasetSpacing : 1,
             animation : true,
-            animationSteps : 60,
+            animationSteps : 30,
             animationEasing : "easeOutQuart",
             onAnimationComplete : null,
             //是否可以对数据进行拖动

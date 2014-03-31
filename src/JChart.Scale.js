@@ -368,7 +368,6 @@
                 dataOffset = 0,//数据偏移量
                 currentOffset = 0,//当前一次滑动的偏移量
                 dataNum = this.config.datasetOffsetNumber,//每屏显示的数据条数
-                totalLen = data.labels.length,//数据总长度
                 gestureStarted;
 
             this.ctx.canvas.addEventListener('mousedown',touchstart);
@@ -390,6 +389,7 @@
                 touchDistanceX = x - startPosition.x;
                 //允许1/10的误差范围
                 if(touchDistanceX%_this.scaleData.xHop < _this.scaleData.xHop/10){
+                    var totalLen = _this.data.labels.length;//数据总长度
                     var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
                     if(offset+dataNum > totalLen)return;
                     if(offset < 0)return;

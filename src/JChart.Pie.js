@@ -24,7 +24,7 @@
             //是否开启动画
             animation : true,
             //动画执行步数
-            animationSteps : 20,
+            animationSteps : 60,
             //动画效果
             animationEasing : "linear",
             //环形图
@@ -240,6 +240,7 @@
         this.init = function(noAnim){
             //计算半径(留10个像素)
             pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
+            segmentTotal = 0;
             _.each(_this.data,function(d){
                 segmentTotal += d.value;
             });
@@ -257,7 +258,6 @@
             this.init(true);
 
         }
-
         function drawText(){
             var ctx = _this.ctx;
             ctx.textBaseline = _this.config.dountTextBaseline;

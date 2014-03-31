@@ -34,7 +34,7 @@
     var line = new JChart.Line(data,{
         id : 'canvas1'
     });
-    line.on('tap',function(data,i,j){
+    line.on('tap.point',function(data,i,j){
         alert(JSON.stringify(data));
     });
 

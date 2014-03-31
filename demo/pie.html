@@ -29,8 +29,12 @@
     var p1 = new JChart.Pie(pieData,{
         id : 'canvas1'
     });
-    p1.on('click',function(i,data){
+    p1.on('tap.pie',function(i,data){
         console.log('点击了第'+i+'个扇形');
+        return true;
+    })
+    p1.on('doubleTap.pie',function(i,data){
+        console.log('双击了第'+i+'个扇形');
         return true;
     })
     p1.on('animationComplete',function(){

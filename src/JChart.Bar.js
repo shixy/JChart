@@ -33,7 +33,7 @@
             animationEasing : "easeOutQuart",
             onAnimationComplete : null,
             //是否可以对数据进行拖动
-            datasetGesture : true,
+            datasetGesture : false,
             //每次显示的数据条数
             datasetOffsetNumber : 12
         }

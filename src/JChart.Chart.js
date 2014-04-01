@@ -116,12 +116,17 @@
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
             var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,
-                _this = this;
+	            hasTouch = 'ontouchstart' in window,
+				START_EV = hasTouch ? 'touchstart' : 'mousedown',
+				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
+				END_EV = hasTouch ? 'touchend' : 'mouseup',
+				CANCEL_EV = hasTouch ? 'touchcancel' : 'mouseup';
+	            _this = this;
 
-            this.ctx.canvas.addEventListener('mousedown',touchstart);
-            this.ctx.canvas.addEventListener('mousemove',touchmove);
-            this.ctx.canvas.addEventListener('mouseup',touchend);
-            this.ctx.canvas.addEventListener('touchcancel',cancelAll);
+            this.ctx.canvas.addEventListener(START_EV,touchstart);
+            this.ctx.canvas.addEventListener(MOVE_EV,touchmove);
+            this.ctx.canvas.addEventListener(END_EV,touchend);
+            this.ctx.canvas.addEventListener(CANCEL_EV,cancelAll);
 
             function touchstart(e){
                 now = Date.now();
@@ -135,9 +140,9 @@
                 longTapTimeout = setTimeout(longTap, longTapDelay);
             }
             function touchmove(e){
-                e = e.touches ? e.touches[0] : e;
-                touch.x2 = e.offsetX;
-                touch.y2 = e.offsetY;
+                var ev = e.touches ? e.touches[0] : e;
+                touch.x2 = ev.offsetX;
+                touch.y2 = ev.offsetY;
                 if (Math.abs(touch.x1 - touch.x2) > 15){
                     e.preventDefault();
                     cancelAll();

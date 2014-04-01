@@ -368,33 +368,43 @@
                 dataOffset = 0,//数据偏移量
                 currentOffset = 0,//当前一次滑动的偏移量
                 dataNum = this.config.datasetOffsetNumber,//每屏显示的数据条数
-                gestureStarted;
+                gestureStarted,
+                hasTouch = 'ontouchstart' in window,
+				START_EV = hasTouch ? 'touchstart' : 'mousedown',
+				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
+				END_EV = hasTouch ? 'touchend' : 'mouseup';
 
-            this.ctx.canvas.addEventListener('mousedown',touchstart);
-            this.ctx.canvas.addEventListener('mousemove',touchmove);
-            this.ctx.canvas.addEventListener('mouseup',touchend);
+            this.ctx.canvas.addEventListener(START_EV,touchstart);
+            this.ctx.canvas.addEventListener(MOVE_EV,touchmove);
+            this.ctx.canvas.addEventListener(END_EV,touchend);
 
-            function touchstart(event){
+            function touchstart(e){
+            	e = e.touches ? e.touches[0] : e;
                 startPosition = {
-                    x : event.pageX,
-                    y : event.pageY
+                    x : e.pageX,
+                    y : e.pageY
                 }
                 touchDistanceX = 0;
                 gestureStarted = true;
             }
-            function touchmove(event){
-                if(!gestureStarted || !_this.config.datasetGesture){return;};
-                var x = event.pageX;
-                var y = event.pageY;
+            function touchmove(e){
+                if(!gestureStarted || !_this.config.datasetGesture)return;
+                e = e.touches ? e.touches[0] : e;
+                var x = e.pageX;
+                var y = e.pageY;
                 touchDistanceX = x - startPosition.x;
-                //允许1/10的误差范围
-                if(touchDistanceX%_this.scaleData.xHop < _this.scaleData.xHop/10){
+				//允许1/10的误差范围
+                //if(touchDistanceX%_this.scaleData.xHop < _this.scaleData.xHop/10){
+            	if(Math.floor(touchDistanceX)%20 < 10){//每滑动20px加载下一组数据，中间偶尔可能会重复加载
                     var totalLen = _this.data.labels.length;//数据总长度
                     var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
                     if(offset+dataNum > totalLen)return;
                     if(offset < 0)return;
                     currentOffset = offset;
-                    _this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
+                    //将操作加入系统队列，解决android系统下touchmove的bug
+                    setTimeout(function(){
+                    	_this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
+                    },0)
                 }
             }
             function touchend(event){

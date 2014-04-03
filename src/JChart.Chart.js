@@ -1,5 +1,13 @@
 ;(function(_){
     var Chart = function(){
+        this.config = {
+            //是否开启动画
+            animation : true,
+            //动画帧数
+            animationSteps : 60,
+            //动画函数
+            animationEasing : "easeOutBounce"
+        }
         this.events = {};
         /**
          * 初始化参数
@@ -58,7 +66,7 @@
          * @param callback  执行成功回调函数
          */
         this.doAnim = function(drawScale,drawData,callback){
-            var config = this.config;
+            var config = this.config,_this = this;
             // 1/动画帧数
             var animFrameAmount = (config.animation)? 1/ _.capValue(config.animationSteps,Number.MAX_VALUE,1) : 1,
             //动画效果
@@ -78,20 +86,15 @@
                     _.requestAnimFrame.call(window,animLoop);
                 }
                 else{
-                    callback && callback();
+                    callback && callback.call(_this);
                     _this.trigger('animationComplete');
                 }
             };
             function animateFrame(){
                 _this.clear();
-                var easeAdjustedAnimationPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),null,0) : 1;
-                if(config.scaleOverlay){
-                    drawData(easeAdjustedAnimationPercent);
-                    drawScale();
-                } else {
-                    drawScale();
-                    drawData(easeAdjustedAnimationPercent);
-                }
+                var animPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),null,0) : 1;
+                drawScale.call(_this);
+                drawData.call(_this,animPercent);
             };
         }
         /**
@@ -116,11 +119,12 @@
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
             var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,
+	            offset = _.getOffset(this.ctx.canvas),
 	            hasTouch = 'ontouchstart' in window,
 				START_EV = hasTouch ? 'touchstart' : 'mousedown',
 				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
 				END_EV = hasTouch ? 'touchend' : 'mouseup',
-				CANCEL_EV = hasTouch ? 'touchcancel' : 'mouseup';
+				CANCEL_EV = hasTouch ? 'touchcancel' : 'mouseup',
 	            _this = this;
 
             this.ctx.canvas.addEventListener(START_EV,touchstart);
@@ -133,16 +137,16 @@
                 e = e.touches ? e.touches[0] : e;
                 delta = now - (touch.last || now);
                 touchTimeout && clearTimeout(touchTimeout);
-                touch.x1 = e.offsetX;
-                touch.y1 = e.offsetY;
+                touch.x1 = e.pageX - offset.left;
+                touch.y1 = e.pageY - offset.top;
                 if (delta > 0 && delta <= 250) touch.isDoubleTap = true;
                 touch.last = now;
                 longTapTimeout = setTimeout(longTap, longTapDelay);
             }
             function touchmove(e){
                 var ev = e.touches ? e.touches[0] : e;
-                touch.x2 = ev.offsetX;
-                touch.y2 = ev.offsetY;
+                touch.x2 = ev.pageX - offset.left;
+                touch.y2 = ev.pageY - offset.top;
                 if (Math.abs(touch.x1 - touch.x2) > 15){
                     e.preventDefault();
                     cancelAll();

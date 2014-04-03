@@ -5,7 +5,7 @@
         var _this = this;
         this.data = data;
         var pieRadius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1;
-        this.config = {
+        _.mergeObj(this.config,{
             id:'',
             //border
             segmentShowStroke : true,
@@ -21,12 +21,6 @@
             pullOutDistance : 10,
             //点击扇形默认触发的事件类型
             clickType : 'pullOut',// pullOut||rotate
-            //是否开启动画
-            animation : true,
-            //动画执行步数
-            animationSteps : 30,
-            //动画效果
-            animationEasing : "linear",
             //环形图
             isDount : false,
             dountRadiusPercent :0.4,
@@ -35,7 +29,7 @@
             dountTextColor : '#e74c3c',
             dountTextBaseline : 'middle',
             dountTextAlign : 'center'
-        }
+        })
         /**
          * 计算各个扇形的起始角度
          * @param data

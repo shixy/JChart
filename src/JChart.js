@@ -214,6 +214,47 @@ window.JingleChart = JChart = {
             }
         }
     },
+    getOffset : function(el){
+    	var box = el.getBoundingClientRect(), 
+		doc = el.ownerDocument, 
+		body = doc.body, 
+		html = doc.documentElement, 
+		clientTop = html.clientTop || body.clientTop || 0, 
+		clientLeft = html.clientLeft || body.clientLeft || 0, 
+		top = box.top + (self.pageYOffset || html.scrollTop || body.scrollTop ) - clientTop, 
+		left = box.left + (self.pageXOffset || html.scrollLeft || body.scrollLeft) - clientLeft 
+		return { 'top': top, 'left': left }; 
+    },
+    /**
+     * 将颜色代码转换成RGB颜色
+     * @param color
+     * @return {*}
+     */
+    hex2Rgb : function(color,alpha){
+        var r, g, b;
+        // 参数为RGB模式时不做进制转换，直接截取字符串即可
+        if( /rgb/.test(color) ){
+            var arr = color.match( /\d+/g );
+            r = parseInt( arr[0] );
+            g = parseInt( arr[1] );
+            b = parseInt( arr[2] );
+        }else if( /#/.test(color) ){// 参数为十六进制时需要做进制转换
+            var len = color.length;
+            if( len === 7 ){// 非简写模式 #0066cc
+                r = parseInt( color.slice(1, 3), 16 );
+                g = parseInt( color.slice(3, 5), 16 );
+                b = parseInt( color.slice(5), 16 );
+            }else if( len === 4 ){ // 简写模式 #06c
+                r = parseInt( color.charAt(1) + val.charAt(1), 16 );
+                g = parseInt( color.charAt(2) + val.charAt(2), 16 );
+                b = parseInt( color.charAt(3) + val.charAt(3), 16 );
+            }
+        }
+        else{
+            return color;
+        }
+        return 'rgb('+r+','+g+','+b+alpha?alpha:'1'+')';
+    },
     tmpl : (function(){
         //Javascript micro templating by John Resig - source at http://ejohn.org/blog/javascript-micro-templating/
         var cache = {};

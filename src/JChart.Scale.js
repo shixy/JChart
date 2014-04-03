@@ -6,7 +6,35 @@
      */
     function Scale(){
         _.Chart.apply(this);
-        var _this = this;
+        _.mergeObj(this.config,{
+            /**
+             * @Object
+             * Y轴刻度值，默认为null，会自动生成，也可以自己指定
+             *   {
+             *      step : 10,//刻度个数，必选项
+             *      stepValue : 10//每两个刻度线之间的差值，必选项
+             *      start : 0//起始刻度值,默认为0
+             *   }
+             */
+            scale : null,
+            //xy轴刻度线的颜色
+            scaleLineColor : "rgba(0,0,0,.1)",
+            //刻度线宽度
+            scaleLineWidth : 1,
+            //是否显示刻度值
+            showScaleLabel : true,
+            //刻度值字体属性
+            scaleFontFamily : "'Arial'",
+            scaleFontSize : 12,
+            scaleFontStyle : "normal",
+            scaleFontColor : "#666",
+            //是否显示网格线
+            showGridLine : true,
+            //网格线颜色
+            gridLineColor : "rgba(0,0,0,.05)",
+            //网格线宽度
+            gridLineWidth : 1
+        })
         this.scaleData = {
             x : 0,//圆点坐标
             y : 0,
@@ -14,6 +42,7 @@
             yHop : 0,//y轴每个刻度的高度
             xLength : 0,//x轴长度
             yHeight : 0,//y轴高度
+            yLabelHeight : 0,//y轴刻度文本高度
             yScaleValue : null,//y轴刻度指标
             labelRotate : 0,//x轴label旋转角度
             widestXLabel : 0,//x轴label占用的最宽宽度
@@ -22,18 +51,18 @@
         /**
          * 计算X轴文本宽度、旋转角度及Y轴高度
          */
-        this.calculateDrawingSizes = function(){
-            var maxSize = _this.height,widestXLabel = 1,labelRotate = 0;
+        this.calcDrawingSizes = function(){
+            var maxSize = this.height,widestXLabel = 1,labelRotate = 0;
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
-            _this.ctx.font = _this.config.scaleFontStyle + " " + _this.config.scaleFontSize+"px " + _this.config.scaleFontFamily;
+            this.ctx.font = this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily;
             //找出最宽的label
-            _.each(_this.chartData.labels,function(o){
-                var textLength = _this.ctx.measureText(o).width;
+            _.each(this.chartData.labels,function(o){
+                var textLength = this.ctx.measureText(o).width;
                 widestXLabel = (textLength > widestXLabel)? textLength : widestXLabel;
-            })
-            if (_this.width/_this.chartData.labels.length < widestXLabel){
+            },this);
+            if (this.width/this.chartData.labels.length < widestXLabel){
                 labelRotate = 45;
-                if (_this.width/_this.chartData.labels.length < Math.cos(labelRotate) * widestXLabel){
+                if (this.width/this.chartData.labels.length < Math.cos(labelRotate) * widestXLabel){
                     labelRotate = 90;
                     maxSize -= widestXLabel;
                 }
@@ -42,13 +71,14 @@
                 }
             }
             else{
-                maxSize -= _this.config.scaleFontSize;
+                maxSize -= this.config.scaleFontSize;
             }
             //给Y轴顶部留一点空白
             maxSize -= 5;
-            maxSize -= _this.config.scaleFontSize;
+            maxSize -= this.config.scaleFontSize;
 
             this.scaleData.yHeight = maxSize;
+            this.scaleData.yLabelHeight = this.config.scaleFontSize;
             this.scaleData.labelRotate = labelRotate;
             this.scaleData.widestXLabel = widestXLabel;
         }
@@ -57,17 +87,17 @@
          * 计算Y轴刻度的边界及刻度步数
          * @return {Object}
          */
-        this.getValueBounds =function() {
+        this.getValueBounds = function(dataset) {
             var upperValue = Number.MIN_VALUE;
             var lowerValue = Number.MAX_VALUE;
-            _.each(_this.chartData.datasets,function(o){
+            _.each(dataset,function(o){
                 _.each(o.data,function(obj){
                     if(obj > upperValue){upperValue = obj};
                     if (obj < lowerValue) { lowerValue = obj};
-                })
+                });
             })
             var yh = this.scaleData.yHeight;
-            var lh = _this.config.scaleFontSize;
+            var lh = this.scaleData.yLabelHeight;
             var maxSteps = Math.floor((yh/(lh*0.66)));
             var minSteps = Math.floor((yh/lh*0.5));
 
@@ -80,99 +110,48 @@
         }
 
         /**
-         * 初始化刻度的各项数据
+         * 计算Y轴刻度的各项数据
          */
-        this.initScaleData = function(){
-            var config = _this.config,calculatedScale;
+        this.calcYAxis = function(){
+            var config = this.config,scale = config.scale;
             //Check and set the scale
-            var labelTemplateString = (config.scaleShowLabels)? config.scaleLabel : "";
-            if (!config.scaleOverride){
-                var bounds = _this.getValueBounds();
-                calculatedScale = _this.calcScale(_this.scaleData.yHeight,bounds.maxSteps,bounds.minSteps,bounds.maxValue,bounds.minValue,labelTemplateString);
+            if (scale){
+                scale.start = scale.start || 0;
+                scale.labels = this.populateLabels(scale.step,scale.start,scale.stepValue);
             }else {
-                calculatedScale = {
-                    steps : config.scaleSteps,
-                    stepValue : config.scaleStepWidth,
-                    graphMin : config.scaleStartValue,
-                    labels : []
-                }
-                _this.populateLabels(labelTemplateString, calculatedScale.labels,calculatedScale.steps,config.scaleStartValue,config.scaleStepWidth);
+                var bounds = this.getValueBounds(this.chartData.datasets ? this.chartData.datasets : this.chartData);
+                scale = this.calcScale(this.scaleData.yHeight,bounds.maxSteps,bounds.minSteps,bounds.maxValue,bounds.minValue);
             }
-            this.scaleData.yScaleValue = calculatedScale;
-            this.scaleData.yHop = Math.floor(_this.scaleData.yHeight/calculatedScale.steps);
-        }
-        /**
-         * 计算坐标轴的刻度
-         */
-        this.calcScale = function(drawingHeight,maxSteps,minSteps,maxValue,minValue,labelTemplateString){
-            var graphMin,graphMax,graphRange,stepValue,numberOfSteps,valueRange,rangeOrderOfMagnitude,decimalNum;
-
-            valueRange = maxValue - minValue;
-
-            rangeOrderOfMagnitude = calculateOrderOfMagnitude(valueRange);
-
-            graphMin = Math.floor(minValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
-
-            graphMax = Math.ceil(maxValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
-
-            graphRange = graphMax - graphMin;
-
-            stepValue = Math.pow(10, rangeOrderOfMagnitude);
-
-            numberOfSteps = Math.round(graphRange / stepValue);
-
-            //Compare number of steps to the max and min for that size graph, and add in half steps if need be.
-            while(numberOfSteps < minSteps || numberOfSteps > maxSteps) {
-                if (numberOfSteps < minSteps){
-                    stepValue /= 2;
-                    numberOfSteps = Math.round(graphRange/stepValue);
-                }
-                else{
-                    stepValue *=2;
-                    numberOfSteps = Math.round(graphRange/stepValue);
-                }
-            };
-
-            var labels = [];
-            _this.populateLabels(labelTemplateString, labels, numberOfSteps, graphMin, stepValue);
-
-            return {
-                steps : numberOfSteps,
-                stepValue : stepValue,
-                graphMin : graphMin,
-                labels : labels
-            }
-            function calculateOrderOfMagnitude(val){
-                return Math.floor(Math.log(val) / Math.LN10);
-            }
+            this.scaleData.yScaleValue = scale;
+            this.scaleData.yHop = Math.floor(this.scaleData.yHeight/scale.step);
         }
 
         /**
          * 计算X轴宽度，每个数据项宽度大小及坐标原点
          */
-        this.calculateXAxisSize = function(){
-            var config = _this.config,scale = _this.scaleData,longestText = 1,xAxisLength,valueHop, x,y;
+        this.calcXAxis = function(){
+            var config = this.config,scale = this.scaleData,longestText = 1,xAxisLength,valueHop, x,y;
             //if we are showing the labels
-            if (config.scaleShowLabels){
-                _this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
+            if (config.showScaleLabel){
+                this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
                 //找出Y轴刻度的最宽值
                 _.each(scale.yScaleValue.labels,function(o){
-                    var measuredText = _this.ctx.measureText(o).width;
+                    var measuredText = this.ctx.measureText(o).width;
                     longestText = (measuredText > longestText)? measuredText : longestText;
-                })
+                },this);
                 //Add a little extra padding from the y axis
                 longestText +=10;
             }
-            xAxisLength = _this.width - longestText - scale.widestXLabel;
+            xAxisLength = this.width - longestText - scale.widestXLabel;
 
-            if(_this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
-                valueHop = Math.floor(xAxisLength/_this.chartData.labels.length);
-                var len = _this.chartData.datasets.length;
-                scale.barWidth = (valueHop - config.scaleGridLineWidth*2 - (config.barValueSpacing*2) - (config.barDatasetSpacing*len-1) - ((config.barStrokeWidth/2)*len-1))/len;
+            if(this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
+                valueHop = Math.floor(xAxisLength/this.chartData.labels.length);
+                var len = this.chartData.datasets.length;
+                scale.barWidth = (valueHop - config.gridLineWidth*2 - (config.barSetSpacing*2) - (config.barSpacing*len-1) - ((config.barBorderWidth/2)*len-1))/len;
             }else{
-                valueHop = Math.floor(xAxisLength/(_this.chartData.labels.length-1));
+                valueHop = Math.floor(xAxisLength/(this.chartData.labels.length-1));
             }
-            x = _this.width-scale.widestXLabel/2-xAxisLength;
+            x = this.width-scale.widestXLabel/2-xAxisLength;
             y = scale.yHeight + config.scaleFontSize/2;
             scale.x = x;
             scale.y = y;
@@ -181,13 +160,13 @@
         }
 
         this.drawScale = function(){
-            var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
+            var ctx = this.ctx,config = this.config,scale = this.scaleData;
             //画X轴数据项
             ctx.lineWidth = config.scaleLineWidth;
             ctx.strokeStyle = config.scaleLineColor;
             ctx.beginPath();
-            ctx.moveTo(_this.width-scale.widestXLabel/2+5,scale.y);
-            ctx.lineTo(_this.width-(scale.widestXLabel/2)-scale.xWidth-5,scale.y);
+            ctx.moveTo(this.width-scale.widestXLabel/2+5,scale.y);
+            ctx.lineTo(this.width-(scale.widestXLabel/2)-scale.xWidth-5,scale.y);
             ctx.stroke();
 
 
@@ -199,10 +178,10 @@
                 ctx.textAlign = "center";
             }
             ctx.fillStyle = config.scaleFontColor;
-            _.each(_this.chartData.labels,function(label,i){
+            _.each(this.chartData.labels,function(label,i){
                 ctx.save();
                 var labelX = scale.x + i*scale.xHop,labelY = scale.y + config.scaleFontSize;
-                if(_this._type_ == 'bar'){
+                if(this._type_ == 'bar'){
                     labelX += scale.xHop/2;
                 }
                 if (scale.labelRotate > 0){
@@ -222,7 +201,7 @@
                     drawGridLine(scale.x + (i+1) * scale.xHop, 5);
                 }else{
                     ctx.moveTo(scale.x + i * scale.xHop, scale.y+3);
-                    if(config.scaleShowGridLines && i>0){
+                    if(config.showGridLine && i>0){
                         drawGridLine(scale.x + i * scale.xHop, 5);
                     }
                     else{
@@ -230,7 +209,7 @@
                     }
                 }
                 ctx.stroke();
-            })
+            },this);
 
             //画Y轴
             ctx.lineWidth = config.scaleLineWidth;
@@ -242,10 +221,10 @@
 
             ctx.textAlign = "right";
             ctx.textBaseline = "middle";
-            for (var j=0; j<scale.yScaleValue.steps; j++){
+            for (var j=0; j<scale.yScaleValue.step; j++){
                 ctx.beginPath();
                 ctx.moveTo(scale.x-3,scale.y - ((j+1) * scale.yHop));
-                if (config.scaleShowGridLines){
+                if (config.showGridLine){
                     drawGridLine(scale.x + scale.xWidth + 5,scale.y - ((j+1) * scale.yHop));
                 }
                 else{
@@ -254,62 +233,64 @@
 
                 ctx.stroke();
 
-                if (config.scaleShowLabels){
+                if (config.showScaleLabel){
                     ctx.fillText(scale.yScaleValue.labels[j],scale.x-8,scale.y - ((j+1) * scale.yHop));
                 }
             }
             function drawGridLine(x,y){
-                ctx.lineWidth = config.scaleGridLineWidth;
-                ctx.strokeStyle = config.scaleGridLineColor;
+                ctx.lineWidth = config.gridLineWidth;
+                ctx.strokeStyle = config.gridLineColor;
                 ctx.lineTo(x, y);
             }
         }
 
-        /**
+        this.initScale = function(showX){
+            this.calcDrawingSizes();
+            this.calcYAxis();
+            showX && this.calcXAxis();
+        }
+
+		/**
          * 计算坐标轴的刻度
          * @param drawingHeight
          * @param maxSteps
          * @param minSteps
          * @param maxValue
          * @param minValue
-         * @param labelTemplateString
          */
-        this.calcScale = function(drawingHeight,maxSteps,minSteps,maxValue,minValue,labelTemplateString){
-            var graphMin,graphMax,graphRange,stepValue,numberOfSteps,valueRange,rangeOrderOfMagnitude,decimalNum;
+        this.calcScale = function(drawingHeight,maxSteps,minSteps,maxValue,minValue){
+            var min,max,range,stepValue,step,valueRange,rangeOrderOfMagnitude;
 
             valueRange = maxValue - minValue;
 
             rangeOrderOfMagnitude = calculateOrderOfMagnitude(valueRange);
 
-            graphMin = Math.floor(minValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
+            min = Math.floor(minValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
 
-            graphMax = Math.ceil(maxValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
+            max = Math.ceil(maxValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
 
-            graphRange = graphMax - graphMin;
+            range = max - min;
 
             stepValue = Math.pow(10, rangeOrderOfMagnitude);
 
-            numberOfSteps = Math.round(graphRange / stepValue);
+            step = Math.round(range / stepValue);
 
             //Compare number of steps to the max and min for that size graph, and add in half steps if need be.
-            while(numberOfSteps < minSteps || numberOfSteps > maxSteps) {
-                if (numberOfSteps < minSteps){
+            while(step < minSteps || step > maxSteps) {
+                if (step < minSteps){
                     stepValue /= 2;
-                    numberOfSteps = Math.round(graphRange/stepValue);
+                    step = Math.round(range/stepValue);
                 }
                 else{
                     stepValue *=2;
-                    numberOfSteps = Math.round(graphRange/stepValue);
+                    step = Math.round(range/stepValue);
                 }
             };
-
-            var labels = [];
-            this.populateLabels(labelTemplateString, labels, numberOfSteps, graphMin, stepValue);
-
+            var labels = this.populateLabels(step, min, stepValue);;
             return {
-                steps : numberOfSteps,
+                step : step,
                 stepValue : stepValue,
-                graphMin : graphMin,
+                start : min,
                 labels : labels
             }
             function calculateOrderOfMagnitude(val){
@@ -318,35 +299,33 @@
         }
 
         /**
-         * Populate an array of all the labels by interpolating the string.
-         * @param labelTemplateString
+         * 构造刻度值
          * @param labels
          * @param numberOfSteps
          * @param graphMin
          * @param stepValue
          */
-        this.populateLabels = function (labelTemplateString, labels, numberOfSteps, graphMin, stepValue) {
-            if (labelTemplateString) {
-                //Fix floating point errors by setting to fixed the on the same decimal as the stepValue.
-                for (var i = 1; i < numberOfSteps + 1; i++) {
-                    labels.push(_.tmpl(labelTemplateString, {value: (graphMin + (stepValue * i)).toFixed(_.getDecimalPlaces(stepValue))}));
+        this.populateLabels = function (step, start, stepValue) {
+            var labels = [];
+            for (var i = 1; i < step + 1; i++) {
+                if(!this.config.showScaleLabel){
+                    labels.push('');
+                    continue;
                 }
+                //小数点位数与stepValue后的小数点一致
+                var value = (start + (stepValue * i)).toFixed(_.getDecimalPlaces(stepValue));
+                var v = this.trigger('renderScaleLabel',[value]);
+                labels.push(v ? v : value);
             }
-        }
-
-        this.calculateOffset = function(val,calculatedScale,scaleHop){
-            var outerValue = calculatedScale.steps * calculatedScale.stepValue;
-            var adjustedValue = val - calculatedScale.graphMin;
+            return labels;
+        },
+        this.calculateOffset = function(val,scale,scaleHop){
+            var outerValue = scale.step * scale.stepValue;
+            var adjustedValue = val - scale.start;
             var scalingFactor = _.capValue(adjustedValue/outerValue,1,0);
-            return (scaleHop*calculatedScale.steps) * scalingFactor;
-        }
-
-        this.initScale = function(){
-            _this.calculateDrawingSizes();
-            _this.initScaleData();
-            _this.calculateXAxisSize();
-        }
-
+            return (scaleHop*scale.step) * scalingFactor;
+        },
+        
         this.sliceData = function(data,offset,len,num){
             var newdata = _.clone(data);
             var min = offset,max = offset + num;
@@ -360,14 +339,15 @@
             });
             return newdata;
         }
-
+		
 
         this.bindDataGestureEvent = function(){
-            var touchDistanceX,//手指滑动偏移量
+            var _this = this,
+            	touchDistanceX,//手指滑动偏移量
                 startPosition,//触摸初始位置记录
                 dataOffset = 0,//数据偏移量
                 currentOffset = 0,//当前一次滑动的偏移量
-                dataNum = this.config.datasetOffsetNumber,//每屏显示的数据条数
+                dataNum = this.config.datasetShowNumber,//每屏显示的数据条数
                 gestureStarted,
                 hasTouch = 'ontouchstart' in window,
 				START_EV = hasTouch ? 'touchstart' : 'mousedown',

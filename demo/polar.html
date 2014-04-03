@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Polar</title>
+    <meta charset="utf-8">
+    <meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+    <script type="text/javascript" src="../src/JChart.js"></script>
+    <script type="text/javascript" src="../src/JChart.Chart.js"></script>
+    <script type="text/javascript" src="../src/JChart.Scale.js"></script>
+    <script type="text/javascript" src="../src/JChart.Polar.js"></script>
+</head>
+<body>
+<canvas id="canvas1" height="600" width="600"></canvas>
+<script type="text/javascript">
+    var data = [
+        {
+            value : 30,
+            color: "#D97041"
+        },
+        {
+            value : 90,
+            color: "#C7604C"
+        },
+        {
+            value : 24,
+            color: "#21323D"
+        },
+        {
+            value : 58,
+            color: "#9D9B7F"
+        },
+        {
+            value : 82,
+            color: "#7D4F6D"
+        },
+        {
+            value : 8,
+            color: "#584A5E"
+        }
+    ]
+    var radar = new JChart.Polar(data,{
+        id : 'canvas1'
+    });
+    radar.on('doubleTap',function(){
+        alert('double');
+    });
+
+</script>
+</body>
+</html>

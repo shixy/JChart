@@ -16,7 +16,7 @@
 	labels : ["Eating","Drinking","Sleeping","Designing","Coding","Partying","Running"],
 	datasets : [
 			{
-				fillColor : "rgba(220,220,220,0.5)",
+				fillColor : "#C0392B",
 				strokeColor : "rgba(220,220,220,1)",
 				pointColor : "rgba(220,220,220,1)",
 				pointStrokeColor : "#fff",
@@ -34,8 +34,8 @@
     var radar = new JChart.Radar(data,{
         id : 'canvas1'
     });
-    radar.on('doubleTap',function(){
-        alert('double');
+    radar.on('tap.point',function(data){
+        alert(data);
     });
 
 </script>

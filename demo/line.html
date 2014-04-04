@@ -10,7 +10,7 @@
     <script type="text/javascript" src="../src/JChart.Line.js"></script>
 </head>
 <body>
-<canvas id="canvas1" height="400" width="600"></canvas>
+<canvas id="canvas1" height="400" width="800"></canvas>
 <script type="text/javascript">
     var data = {
         labels : ["2012","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2013',"二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2014','一月','二月'],
@@ -20,24 +20,25 @@
                 color : "rgba(220,220,220,1)",
                 pointColor : "rgba(220,220,220,1)",
                 pointBorderColor : "#fff",
-                data : [65,59,90,81,56,55,40,20,3,20,10,60,65,59,90,81,56,55,40,20,3,20,10,60,10,60,65,59]
+                data : [65,59,90,81,56,55,40,20,13,20,11,60,65,59,90,81,56,55,40,20,11,20,10,60,11,60,65]
             },
             {
                 fillColor : "rgba(151,187,205,0.5)",
                 color : "rgba(151,187,205,1)",
                 pointColor : "rgba(151,187,205,1)",
                 pointBorderColor : "#fff",
-                data : [28,48,40,19,96,27,100,40,40,70,10,89,28,48,40,19,96,27,100,40,40,70,10,89,28,48,40,19,96]
+                data : [28,48,40,19,96,27,100,40,40,70,11,89,28,48,40,19,96,27,100,40,40,70,10,89,28,48,40]
             }
         ]
     }
     var line = new JChart.Line(data,{
         id : 'canvas1',
-        scale : {
-            step : 10,
-            stepValue : 10,
-            start : 0
-        },
+//        scale : {
+//            step : 10,
+//            stepValue : 10,
+//            start : 0
+//        },
+        //datasetGesture : true,
         datasetStroke   : false
     });
     line.on('tap.point',function(data,i,j){

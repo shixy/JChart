@@ -5,6 +5,10 @@
      * @constructor
      */
     function Scale(){
+        var P_T = 5,//图表顶部空白
+            P_R = 5,//图表右侧空白
+            P_Y = 20,//y轴左侧空白
+            P_X = 10;//x轴文本与x之间的间距
         _.Chart.apply(this);
         _.mergeObj(this.config,{
             /**
@@ -18,16 +22,22 @@
              */
             scale : null,
             //xy轴刻度线的颜色
-            scaleLineColor : "rgba(0,0,0,.1)",
+            scaleLineColor : "rgba(0,0,0,.3)",
             //刻度线宽度
             scaleLineWidth : 1,
             //是否显示刻度值
             showScaleLabel : true,
             //刻度值字体属性
-            scaleFontFamily : "'Arial'",
+            scaleFontFamily : "Arial",
             scaleFontSize : 12,
             scaleFontStyle : "normal",
             scaleFontColor : "#666",
+            //刻度值字体属性
+            showLabel : true,
+            labelFontFamily : "Arial",
+            labelFontSize : 12,
+            labelFontStyle : "normal",
+            labelFontColor : "#5b5b5b",
             //是否显示网格线
             showGridLine : true,
             //网格线颜色
@@ -45,42 +55,52 @@
             yLabelHeight : 0,//y轴刻度文本高度
             yScaleValue : null,//y轴刻度指标
             labelRotate : 0,//x轴label旋转角度
-            widestXLabel : 0,//x轴label占用的最宽宽度
+            xLabelWidth : 0,//x轴label宽度
+            xLabelHeight : 0,//x轴label宽度
             barWidth : 0//柱形图柱子宽度
         }
         /**
          * 计算X轴文本宽度、旋转角度及Y轴高度
          */
         this.calcDrawingSizes = function(){
-            var maxSize = this.height,widestXLabel = 1,labelRotate = 0;
+            var maxSize = this.height,widestX = 0,xLabelWidth = 0,xLabelHeight = this.config.scaleFontSize,labelRotate = 0,dataLen = this.chartData.labels.length;
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
             this.ctx.font = this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily;
             //找出最宽的label
             _.each(this.chartData.labels,function(o){
-                var textLength = this.ctx.measureText(o).width;
-                widestXLabel = (textLength > widestXLabel)? textLength : widestXLabel;
+                var w = this.ctx.measureText(o).width;
+                widestX = (w > widestX)? w : widestX;
             },this);
-            if (this.width/this.chartData.labels.length < widestXLabel){
+            xLabelWidth = widestX;
+            if (this.width/dataLen < widestX){
                 labelRotate = 45;
-                if (this.width/this.chartData.labels.length < Math.cos(labelRotate) * widestXLabel){
+                xLabelWidth = Math.cos(labelRotate*Math.PI/180) * widestX;
+                xLabelHeight = Math.sin(labelRotate*Math.PI/180) * widestX ;
+                if (this.width/dataLen < xLabelHeight){
                     labelRotate = 90;
-                    maxSize -= widestXLabel;
+                    xLabelWidth = this.config.scaleFontSize;
+                    xLabelHeight = widestX;
                 }
-                else{
-                    maxSize -= Math.sin(labelRotate) * widestXLabel;
-                }
-            }
-            else{
-                maxSize -= this.config.scaleFontSize;
-            }
-            //给Y轴顶部留一点空白
-            maxSize -= 5;
-            maxSize -= this.config.scaleFontSize;
 
+            }
+            //减去x轴label的高度
+            maxSize -= xLabelHeight;
+            //减去x轴文本与x轴之间的间距
+            maxSize -= P_X;
+            //给Y轴顶部留一点空白
+            P_T += this.config.showLabel?this.config.labelFontSize:0;
+            maxSize -= P_T;
+
+            //y轴高度
             this.scaleData.yHeight = maxSize;
+            //y轴刻度高度
             this.scaleData.yLabelHeight = this.config.scaleFontSize;
+            //x轴文本旋转角度
             this.scaleData.labelRotate = labelRotate;
-            this.scaleData.widestXLabel = widestXLabel;
+            //x轴文本的宽度
+            this.scaleData.xLabelWidth = xLabelWidth;
+            //x轴文本的高度
+            this.scaleData.xLabelHeight = xLabelHeight;
         }
 
         /**
@@ -114,7 +134,6 @@
          */
         this.calcYAxis = function(){
             var config = this.config,scale = config.scale;
-            //Check and set the scale
             if (scale){
                 scale.start = scale.start || 0;
                 scale.labels = this.populateLabels(scale.step,scale.start,scale.stepValue);
@@ -130,19 +149,19 @@
          * 计算X轴宽度，每个数据项宽度大小及坐标原点
          */
         this.calcXAxis = function(){
-            var config = this.config,scale = this.scaleData,longestText = 1,xAxisLength,valueHop, x,y;
-            //if we are showing the labels
+            var config = this.config,scale = this.scaleData,yLabelWidth = 0,xAxisLength,valueHop, x,y;
             if (config.showScaleLabel){
                 this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
                 //找出Y轴刻度的最宽值
                 _.each(scale.yScaleValue.labels,function(o){
-                    var measuredText = this.ctx.measureText(o).width;
-                    longestText = (measuredText > longestText)? measuredText : longestText;
+                    var w = this.ctx.measureText(o).width;
+                    yLabelWidth = (w > yLabelWidth)? w : yLabelWidth;
                 },this);
-                //Add a little extra padding from the y axis
-                longestText +=10;
+                yLabelWidth += P_Y;
             }
-            xAxisLength = this.width - longestText - scale.widestXLabel;
+            //x轴的宽度
+            P_R += this.config.showLabel?this.config.labelFontSize:0;
+            xAxisLength = this.width - yLabelWidth-P_R;
 
             if(this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
                 valueHop = Math.floor(xAxisLength/this.chartData.labels.length);
@@ -151,10 +170,8 @@
             }else{
                 valueHop = Math.floor(xAxisLength/(this.chartData.labels.length-1));
             }
-            x = this.width-scale.widestXLabel/2-xAxisLength;
-            y = scale.yHeight + config.scaleFontSize/2;
-            scale.x = x;
-            scale.y = y;
+            scale.x = yLabelWidth;
+            scale.y = this.height - scale.xLabelHeight - P_X;
             scale.xWidth = xAxisLength;
             scale.xHop = valueHop;
         }
@@ -165,10 +182,9 @@
             ctx.lineWidth = config.scaleLineWidth;
             ctx.strokeStyle = config.scaleLineColor;
             ctx.beginPath();
-            ctx.moveTo(this.width-scale.widestXLabel/2+5,scale.y);
-            ctx.lineTo(this.width-(scale.widestXLabel/2)-scale.xWidth-5,scale.y);
+            ctx.moveTo(scale.x-3,scale.y);
+            ctx.lineTo(scale.x+scale.xWidth,scale.y);
             ctx.stroke();
-
 
             if (scale.labelRotate > 0){
                 ctx.save();
@@ -180,7 +196,8 @@
             ctx.fillStyle = config.scaleFontColor;
             _.each(this.chartData.labels,function(label,i){
                 ctx.save();
-                var labelX = scale.x + i*scale.xHop,labelY = scale.y + config.scaleFontSize;
+                ctx.textBaseline = 'hanging';
+                var labelX = scale.x + i*scale.xHop,labelY = scale.y + P_X/2;
                 if(this._type_ == 'bar'){
                     labelX += scale.xHop/2;
                 }
@@ -190,22 +207,18 @@
                     ctx.fillText(label, 0,0);
                     ctx.restore();
                 }else{
-                    ctx.fillText(label, labelX,labelY+3);
+                    ctx.fillText(label, labelX,labelY);
                 }
 
                 ctx.beginPath();
 
-                //Check i isnt 0, so we dont go over the Y axis twice.
                 if(this._type_ == 'bar'){
-                    ctx.moveTo(scale.x + (i+1) * scale.xHop, scale.y+3);
-                    drawGridLine(scale.x + (i+1) * scale.xHop, 5);
+                    ctx.moveTo(scale.x + (i+1) * scale.xHop, scale.y);
+                    drawGridLine(scale.x + (i+1) * scale.xHop, scale.y-scale.yHeight);
                 }else{
-                    ctx.moveTo(scale.x + i * scale.xHop, scale.y+3);
-                    if(config.showGridLine && i>0){
-                        drawGridLine(scale.x + i * scale.xHop, 5);
-                    }
-                    else{
-                        ctx.lineTo(scale.x + i * scale.xHop, scale.y+3);
+                    ctx.moveTo(scale.x + i * scale.xHop, scale.y);
+                    if(config.showGridLine){
+                        drawGridLine(scale.x + i * scale.xHop, scale.y-scale.yHeight);
                     }
                 }
                 ctx.stroke();
@@ -215,26 +228,22 @@
             ctx.lineWidth = config.scaleLineWidth;
             ctx.strokeStyle = config.scaleLineColor;
             ctx.beginPath();
-            ctx.moveTo(scale.x,scale.y+5);
-            ctx.lineTo(scale.x,5);
+            ctx.moveTo(scale.x,scale.y+3);
+            ctx.lineTo(scale.x,scale.y-scale.yHeight);
             ctx.stroke();
 
             ctx.textAlign = "right";
             ctx.textBaseline = "middle";
             for (var j=0; j<scale.yScaleValue.step; j++){
+                var y = scale.y - ((j+1) * scale.yHop);
                 ctx.beginPath();
-                ctx.moveTo(scale.x-3,scale.y - ((j+1) * scale.yHop));
+                ctx.moveTo(scale.x,y);
                 if (config.showGridLine){
-                    drawGridLine(scale.x + scale.xWidth + 5,scale.y - ((j+1) * scale.yHop));
+                    drawGridLine(scale.x + scale.xWidth,y);
                 }
-                else{
-                    ctx.lineTo(scale.x-0.5,scale.y - ((j+1) * scale.yHop));
-                }
-
                 ctx.stroke();
-
                 if (config.showScaleLabel){
-                    ctx.fillText(scale.yScaleValue.labels[j],scale.x-8,scale.y - ((j+1) * scale.yHop));
+                    ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
                 }
             }
             function drawGridLine(x,y){
@@ -248,6 +257,28 @@
             this.calcDrawingSizes();
             this.calcYAxis();
             showX && this.calcXAxis();
+        }
+
+        this.drawText = function(x,y,value){
+            this.ctx.save();
+            this.ctx.textBaseline = 'bottom';
+            this.ctx.textAlign = "center";
+            this.ctx.fillStyle = this.config.labelFontColor;
+            this.ctx.font = this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily;
+            this.ctx.fillText(value,x,y-3);
+            this.ctx.restore();
+        }
+
+        this.drawPoint = function(x,y,d){
+            //默认为白色
+            this.ctx.fillStyle = d.pointColor || '#fff';
+            //默认与线条颜色一致
+            this.ctx.strokeStyle = d.pointBorderColor || d.color;
+            this.ctx.lineWidth = this.config.pointBorderWidth;
+            this.ctx.beginPath();
+            this.ctx.arc(x,y,this.config.pointRadius,0,Math.PI*2,true);
+            this.ctx.fill();
+            this.ctx.stroke();
         }
 
 		/**
@@ -265,7 +296,8 @@
 
             rangeOrderOfMagnitude = calculateOrderOfMagnitude(valueRange);
 
-            min = Math.floor(minValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
+            //min = Math.floor(minValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
+            min = 0;//固定起始点为0
 
             max = Math.ceil(maxValue / (1 * Math.pow(10, rangeOrderOfMagnitude))) * Math.pow(10, rangeOrderOfMagnitude);
 
@@ -319,7 +351,7 @@
             }
             return labels;
         },
-        this.calculateOffset = function(val,scale,scaleHop){
+        this.calcOffset = function(val,scale,scaleHop){
             var outerValue = scale.step * scale.stepValue;
             var adjustedValue = val - scale.start;
             var scalingFactor = _.capValue(adjustedValue/outerValue,1,0);
@@ -339,8 +371,6 @@
             });
             return newdata;
         }
-		
-
         this.bindDataGestureEvent = function(){
             var _this = this,
             	touchDistanceX,//手指滑动偏移量

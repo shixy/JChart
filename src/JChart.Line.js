@@ -67,7 +67,7 @@
                 ctx.strokeStyle = set.color;//线条的颜色
                 ctx.lineWidth = config.lineWidth;
                 ctx.beginPath();
-                ctx.moveTo(scale.x, scale.y - animPc*(_this.calculateOffset(set.data[0],scale.yScaleValue,scale.yHop)))
+                ctx.moveTo(scale.x, scale.y - animPc*(_this.calcOffset(set.data[0],scale.yScaleValue,scale.yHop)))
                 _.each(set.data,function(d,j){
                     var pointX = xPos(j),pointY = yPos(i,j);
                     if (config.smooth){//贝塞尔曲线
@@ -93,29 +93,22 @@
                 } else{
                     ctx.closePath();
                 }
-                if(config.showPoint){
-                    //默认为白色
-                    ctx.fillStyle = set.pointColor || '#fff';
-                    //默认与线条颜色一致
-                    ctx.strokeStyle = set.pointBorderColor || set.color;
-                    ctx.lineWidth = config.pointBorderWidth;
-                    _.each(set.data,function(d,k){
-                        ctx.beginPath();
-                        ctx.arc(scale.x + (scale.xHop *k),scale.y - animPc*(_this.calculateOffset(d,scale.yScaleValue,scale.yHop)),config.pointRadius,0,Math.PI*2,true);
-                        ctx.fill();
-                        ctx.stroke();
-                    })
-                }
+                //画点以及点上文本
+                _.each(set.data,function(d,k){
+                    var x = scale.x + (scale.xHop *k),
+                        y = scale.y - animPc*(_this.calcOffset(d,scale.yScaleValue,scale.yHop));
+                    config.showPoint && _this.drawPoint(x,y,set);
+                    config.showLabel && _this.drawText(x,y,d);
+                });
             });
 
             function yPos(dataSet,iteration){
-                return scale.y - animPc*(_this.calculateOffset(dataset[dataSet].data[iteration],scale.yScaleValue,scale.yHop));
+                return scale.y - animPc*(_this.calcOffset(dataset[dataSet].data[iteration],scale.yScaleValue,scale.yHop));
             }
             function xPos(iteration){
                 return scale.x + (scale.xHop * iteration);
             }
         }
-
         function tapHandler(x,y){
             var p = isInPointRange(x,y);
             if(p){

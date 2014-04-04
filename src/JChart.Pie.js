@@ -6,13 +6,12 @@
         this.data = data;
         var pieRadius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1;
         _.mergeObj(this.config,{
-            id:'',
             //border
-            segmentShowStroke : true,
+            showSegmentBorder : true,
             //border color
-            segmentStrokeColor : "#fff",
+            segmentBorderColor : "#fff",
             //border width
-            segmentStrokeWidth : 2,
+            segmentBorderWidth : 2,
             //开始角度,默认为12点钟方向
             startAngle : -Math.PI/2,
             //旋转扇形，使其中线对应的角度
@@ -118,11 +117,13 @@
             ctx.closePath();
             ctx.fillStyle = data.color;
             ctx.fill();
-            if(_this.config.segmentShowStroke){
-                ctx.lineWidth = _this.config.segmentStrokeWidth;
-                ctx.strokeStyle = _this.config.segmentStrokeColor;
+            if(_this.config.showSegmentBorder){
+                ctx.lineWidth = _this.config.segmentBorderWidth;
+                ctx.strokeStyle = _this.config.segmentBorderColor;
                 ctx.stroke();
             }
+
+
         }
 
         /**

@@ -72,7 +72,7 @@
                 _.each(set.data,function(d,j){
                     var x1 = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,
                         y1 = scale.y,x2 = x1 + scale.barWidth,
-                        y2 = scale.y - animPc*_this.calculateOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2);
+                        y2 = scale.y - animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2);
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x1, y2);
@@ -86,6 +86,7 @@
                     if(animPc >= 1){
                         barRanges.push([x1,x2,y1,y2,j,i]);
                     }
+                    config.showLabel && _this.drawText((x1+x2)/2,y2+3,d);
 
                 });
             })

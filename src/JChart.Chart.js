@@ -84,8 +84,7 @@
                 //Stop the loop continuing forever
                 if (percentAnimComplete <= 1){
                     _.requestAnimFrame.call(window,animLoop);
-                }
-                else{
+                }else{
                     callback && callback.call(_this);
                     _this.trigger('animationComplete');
                 }
@@ -93,8 +92,8 @@
             function animateFrame(){
                 _this.clear();
                 var animPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),null,0) : 1;
-                drawScale.call(_this);
                 drawData.call(_this,animPercent);
+                drawScale.call(_this);
             };
         }
         /**

@@ -208,7 +208,7 @@
             if ( currentPullOutIndex == i ) return;
             currentPullOutIndex = i;
             drawPie(1);
-            this.trigger('pullOut',[i,_this.data[i]]);
+            this.trigger('pullOut',[_this.data[i],i]);
         }
         /**
          * 旋转扇形块的中线指向6点钟方向
@@ -222,7 +222,7 @@
             rotateAngle = newRotateAngle;
             this.doAnim(null,animRotate,function(){
                 startAngle += rotateAngle;
-                _this.trigger('rotate',[i,_this.data[i]]);
+                _this.trigger('rotate',[_this.data[i],i]);
             });
         }
         this.setDountText = function(text){
@@ -249,11 +249,6 @@
             startAngle = _this.config.startAngle;
         }
 
-        this.load = function(data){
-            this.data = data;
-            this.init(true);
-
-        }
         function drawText(){
             var ctx = _this.ctx;
             ctx.textBaseline = _this.config.dountTextBaseline;

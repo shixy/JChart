@@ -62,7 +62,7 @@
                 drawSegment(a,animPercent,type);
             });
             if(_this.config.isDount && _this.config.dountText){
-                drawText();
+                drawDountText();
             }
         }
 
@@ -103,29 +103,39 @@
             }
             var angle = calcSegmentAngle(range,percent,type);
             drawPiePart(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
+            if(percent>=1){
+                drawText(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
+            }
         }
 
         function drawPiePart(x,y,r,start,end,data){
-            var ctx = _this.ctx;
-            ctx.beginPath();
-            ctx.arc(x,y,r,start,end,false);
-            if(_this.config.isDount){
-                ctx.arc(x,y,r*_this.config.dountRadiusPercent,end,start,true);
-            }else{
-                ctx.lineTo(x,y);
-            }
-            ctx.closePath();
-            ctx.fillStyle = data.color;
-            ctx.fill();
+            var color = data.color,borderColor,borderWidth;
             if(_this.config.showSegmentBorder){
-                ctx.lineWidth = _this.config.segmentBorderWidth;
-                ctx.strokeStyle = _this.config.segmentBorderColor;
-                ctx.stroke();
+                borderColor = _this.config.segmentBorderColor;
+                borderWidth = _this.config.segmentBorderWidth;
             }
-
-
+            if(_this.config.isDount){
+                _this.ctx.dountSector(x,y,r*_this.config.dountRadiusPercent,r,start,end,color,borderColor,borderWidth);
+            }else{
+                _this.ctx.sector(x,y,r,start,end,color,borderColor,borderWidth);
+            }
         }
-
+        function drawText(x,y,r,start,end,data){
+            //计算文本位置
+            var middAngle = (start+end)/2;
+            var d = r/2;
+            if(_this.config.isDount){
+                d = r/2 + r*_this.config.dountRadiusPercent/2;
+            }
+            var xaxis = Math.cos(middAngle) * d + x;
+            var yaxis = Math.sin(middAngle) * d + y;
+            _this.ctx.fillText('30%',xaxis,yaxis,{
+                textBaseline : _this.config.dountTextBaseline,
+                textAlign : _this.config.dountTextAlign,
+                font : 'normal 20px Arial',
+                fillStyle : _this.config.dountTextColor
+            });
+        }
         /**
          * 绑定canvas dom元素上的事件 如：click、touch
          */
@@ -249,13 +259,13 @@
             startAngle = _this.config.startAngle;
         }
 
-        function drawText(){
-            var ctx = _this.ctx;
-            ctx.textBaseline = _this.config.dountTextBaseline;
-            ctx.textAlign = _this.config.dountTextAlign;
-            ctx.font = _this.config.dountTextFont;
-            ctx.fillStyle = _this.config.dountTextColor;
-            ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,pieRadius*_this.config.dountRadiusPercent);
+        function drawDountText(){
+            _this.ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,{
+                textBaseline : _this.config.dountTextBaseline,
+                textAlign : _this.config.dountTextAlign,
+                font : _this.config.dountTextFont,
+                fillStyle : _this.config.dountTextColor
+            });
         }
 
         //初始化参数

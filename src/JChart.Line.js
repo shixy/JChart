@@ -8,7 +8,7 @@
         var _this = this;
         _.mergeObj(this.config,{
             //平滑曲线
-            smooth : false,
+            smooth : true,
             //是否显示线的连接点
             showPoint : true,
             //连接圆点半径
@@ -64,10 +64,8 @@
             if(animPc >= 1)pointRanges = [];
             var ctx = _this.ctx,config = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
             _.each(dataset,function(set,i){
-                ctx.strokeStyle = set.color;//线条的颜色
-                ctx.lineWidth = config.lineWidth;
-                ctx.beginPath();
-                ctx.moveTo(scale.x, scale.y - animPc*(_this.calcOffset(set.data[0],scale.yScaleValue,scale.yHop)))
+                ctx.set('lineWidth',config.lineWidth).set('strokeStyle',set.color).beginPath()
+                    .moveTo(scale.x, scale.y - animPc*(_this.calcOffset(set.data[0],scale.yScaleValue,scale.yHop)));
                 _.each(set.data,function(d,j){
                     var pointX = xPos(j),pointY = yPos(i,j);
                     if (config.smooth){//贝塞尔曲线
@@ -81,13 +79,12 @@
                 });
                 ctx.stroke();
                 if (config.fill){
-                    ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y);
-                    ctx.lineTo(scale.x,scale.y);
-                    ctx.closePath();
+                    ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y)
+                        .lineTo(scale.x,scale.y).closePath();
                     if(set.fillColor){
-                        ctx.fillStyle = set.fillColor;
+                        ctx.set('fillStyle',set.fillColor);
                     }else{
-                        ctx.fillStyle =  _.hex2Rgb(set.color,0.6);
+                        ctx.set('fillStyle',_.hex2Rgb(set.color,0.6));
                     }
                     ctx.fill();
                 } else{

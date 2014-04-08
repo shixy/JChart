@@ -60,47 +60,41 @@
         }
         
         this.drawScale = function(){
-        	var ctx = this.ctx,cfg = this.config,scale = this.scaleData;
+        	var cfg = this.config,scale = this.scaleData,x = this.width/2, y = this.height/2
+                px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
             for (var i=0; i<scale.yScaleValue.step; i++){
+                var hop = scale.yHop * (i + 1);
                 if (cfg.showGridLine){
-                    ctx.beginPath();
-                    ctx.arc(this.width/2, this.height/2, scale.yHop * (i + 1), 0, (Math.PI * 2), true);
-                    ctx.strokeStyle = cfg.gridLineColor;
-                    ctx.lineWidth = cfg.gridLineWidth;
-                    ctx.stroke();
+                    this.ctx.circle(x, y, hop,false,cfg.gridLineColor,cfg.gridLineWidth)
                 }
 
                 if (cfg.showScaleLabel){
-                    ctx.textAlign = "center";
-                    ctx.font = cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily;
+                    this.ctx.set('textAlign','center')
+                        .set('font',cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily);
                     var label =  scale.yScaleValue.labels[i];
                     if (cfg.showScaleLabelBackdrop){
-                        var textWidth = ctx.measureText(label).width;
-                        ctx.fillStyle = cfg.scaleBackdropColor;
-                        ctx.beginPath();
-                        ctx.rect(
-                            Math.round(this.width/2 - textWidth/2 - cfg.scaleBackdropPaddingX),     //X
-                            Math.round(this.height/2 - (scale.yHop * (i + 1)) - cfg.scaleFontSize*0.5 - cfg.scaleBackdropPaddingY),//Y
-                            Math.round(textWidth + (cfg.scaleBackdropPaddingX*2)), //Width
-                            Math.round(cfg.scaleFontSize + (cfg.scaleBackdropPaddingY*2)) //Height
+                        var textWidth = this.ctx.measureText(label).width;
+                        this.ctx.rect(
+                            Math.round(x - textWidth/2 - px),     //X
+                            Math.round(y - hop - cfg.scaleFontSize*0.5 - py),//Y
+                            Math.round(textWidth + px*2), //Width
+                            Math.round(cfg.scaleFontSize + py*2), //Height
+                            cfg.scaleBackdropColor
                         );
-                        ctx.fill();
                     }
-                    ctx.textBaseline = "middle";
-                    ctx.fillStyle = cfg.scaleFontColor;
-                    ctx.fillText(label,this.width/2,this.height/2 - (scale.yHop * (i + 1)));
+                    this.ctx.fillText(label,x,y - hop,{
+                        textBaseline : 'middle',
+                        fillStyle : cfg.scaleFontColor
+                    });
                 }
             }
         }
 
         this.drawAllSegments = function(animPc){
-            var startAngle = -Math.PI/2,
-                angleStep = (Math.PI*2)/this.data.length,
-                scaleAnimation = 1,
-                rotateAnimation = 1,
-                scale = this.scaleData,
-                cfg = this.config,
-                ctx = this.ctx;
+            var startAngle = -Math.PI/2,angleStep = (Math.PI*2)/this.data.length,
+                scaleAnimation = 1,rotateAnimation = 1,
+                scale = this.scaleData,cfg = this.config,
+                borderColor,borderWidth;
             if (cfg.animation) {
                 if (cfg.animateScale) {
                     scaleAnimation = animPc;
@@ -109,20 +103,15 @@
                     rotateAnimation = animPc;
                 }
             }
-            for (var i=0; i<this.data.length; i++){
-                ctx.beginPath();
-                ctx.arc(this.width/2,this.height/2,scaleAnimation * this.calcOffset(data[i].value,scale.yScaleValue,scale.yHop),startAngle, startAngle + rotateAnimation*angleStep, false);
-                ctx.lineTo(this.width/2,this.height/2);
-                ctx.closePath();
-                ctx.fillStyle = this.data[i].color;
-                ctx.fill();
-                if(cfg.showSegmentBorder){
-                    ctx.strokeStyle = cfg.segmentBorderColor;
-                    ctx.lineWidth = cfg.segmentBorderWidth;
-                    ctx.stroke();
-                }
-                startAngle += rotateAnimation*angleStep;
+            if(cfg.showSegmentBorder){
+                borderColor = cfg.segmentBorderColor;
+                borderWidth = cfg.segmentBorderWidth;
             }
+            _.each(this.data,function(d){
+                var r = scaleAnimation * this.calcOffset(d.value,scale.yScaleValue,scale.yHop);
+                this.ctx.sector(this.width/2,this.height/2,r,startAngle, startAngle + rotateAnimation*angleStep,d.color,borderColor,borderWidth);
+                startAngle += rotateAnimation*angleStep;
+            },this);
         }
 
         this.getValueBounds = function(data){

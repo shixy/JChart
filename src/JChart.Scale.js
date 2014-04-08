@@ -22,9 +22,9 @@
              */
             scale : null,
             //xy轴刻度线的颜色
-            scaleLineColor : "rgba(0,0,0,.3)",
+            scaleLineColor : "rgba(0,0,0,.1)",
             //刻度线宽度
-            scaleLineWidth : 1,
+            scaleLineWidth :1,
             //是否显示刻度值
             showScaleLabel : true,
             //刻度值字体属性
@@ -65,7 +65,7 @@
         this.calcDrawingSizes = function(){
             var maxSize = this.height,widestX = 0,xLabelWidth = 0,xLabelHeight = this.config.scaleFontSize,labelRotate = 0,dataLen = this.chartData.labels.length;
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
-            this.ctx.font = this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily;
+            this.ctx.set('font',this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily);
             //找出最宽的label
             _.each(this.chartData.labels,function(o){
                 var w = this.ctx.measureText(o).width;
@@ -151,7 +151,7 @@
         this.calcXAxis = function(){
             var config = this.config,scale = this.scaleData,yLabelWidth = 0,xAxisLength,valueHop, x,y;
             if (config.showScaleLabel){
-                this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
+                //this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
                 //找出Y轴刻度的最宽值
                 _.each(scale.yScaleValue.labels,function(o){
                     var w = this.ctx.measureText(o).width;
@@ -179,8 +179,7 @@
         this.drawScale = function(){
             var ctx = this.ctx,config = this.config,scale = this.scaleData;
             //画X轴数据项
-            ctx.lineWidth = config.scaleLineWidth;
-            ctx.strokeStyle = config.scaleLineColor;
+            ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
             ctx.beginPath();
             ctx.moveTo(scale.x-3,scale.y);
             ctx.lineTo(scale.x+scale.xWidth,scale.y);
@@ -188,15 +187,16 @@
 
             if (scale.labelRotate > 0){
                 ctx.save();
-                ctx.textAlign = "right";
+                ctx.set('textAlign','right');
+               // ctx.textAlign = "right";
             }
             else{
-                ctx.textAlign = "center";
+                ctx.set('textAlign','center');
+                //ctx.textAlign = "center";
             }
-            ctx.fillStyle = config.scaleFontColor;
+            ctx.set('fillStyle',config.scaleFontColor).set('textBaseline','hanging');
             _.each(this.chartData.labels,function(label,i){
                 ctx.save();
-                ctx.textBaseline = 'hanging';
                 var labelX = scale.x + i*scale.xHop,labelY = scale.y + P_X/2;
                 if(this._type_ == 'bar'){
                     labelX += scale.xHop/2;
@@ -225,15 +225,13 @@
             },this);
 
             //画Y轴
-            ctx.lineWidth = config.scaleLineWidth;
-            ctx.strokeStyle = config.scaleLineColor;
+            ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
             ctx.beginPath();
             ctx.moveTo(scale.x,scale.y+3);
             ctx.lineTo(scale.x,scale.y-scale.yHeight);
             ctx.stroke();
 
-            ctx.textAlign = "right";
-            ctx.textBaseline = "middle";
+            ctx.set('textAlign','right').set('textBaseline','middle');
             for (var j=0; j<scale.yScaleValue.step; j++){
                 var y = scale.y - ((j+1) * scale.yHop);
                 ctx.beginPath();
@@ -247,9 +245,9 @@
                 }
             }
             function drawGridLine(x,y){
-                ctx.lineWidth = config.gridLineWidth;
-                ctx.strokeStyle = config.gridLineColor;
-                ctx.lineTo(x, y);
+                ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
+                //1px线条模糊问题
+                ctx.lineTo(x+0.5, y+0.5);
             }
         }
 
@@ -260,25 +258,17 @@
         }
 
         this.drawText = function(x,y,value){
-            this.ctx.save();
-            this.ctx.textBaseline = 'bottom';
-            this.ctx.textAlign = "center";
-            this.ctx.fillStyle = this.config.labelFontColor;
-            this.ctx.font = this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily;
-            this.ctx.fillText(value,x,y-3);
-            this.ctx.restore();
+            this.ctx.save().fillText(value,x,y-3,{
+                textBaseline : 'bottom',
+                textAlign : 'center',
+                fillStyle : this.config.labelFontColor,
+                font : this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily
+            }).restore();
         }
 
         this.drawPoint = function(x,y,d){
-            //默认为白色
-            this.ctx.fillStyle = d.pointColor || '#fff';
-            //默认与线条颜色一致
-            this.ctx.strokeStyle = d.pointBorderColor || d.color;
-            this.ctx.lineWidth = this.config.pointBorderWidth;
-            this.ctx.beginPath();
-            this.ctx.arc(x,y,this.config.pointRadius,0,Math.PI*2,true);
-            this.ctx.fill();
-            this.ctx.stroke();
+            //填充色默认为白色，边框颜色默认与线条颜色一致
+            this.ctx.beginPath().circle(x,y,this.config.pointRadius,d.pointColor || '#fff',d.pointBorderColor || d.color,this.config.pointBorderWidth);
         }
 
 		/**
@@ -422,7 +412,6 @@
                 dataOffset = currentOffset;
             }
         }
-
     }
     _.Scale = Scale;
 })(JChart);

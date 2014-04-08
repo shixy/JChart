@@ -63,11 +63,13 @@
             ctx.lineWidth = config.barBorderWidth;
             _.each(_this.chartData.datasets,function(set,i){
                 if(set.borderColor){
-                    ctx.fillStyle = set.color;
-                    ctx.strokeStyle = set.borderColor;
+                    ctx.set('fillStyle',set.color).set('strokeStyle',set.borderColor);
+//                    ctx.fillStyle = set.color;
+//                    ctx.strokeStyle = set.borderColor;
                 }else{
-                    ctx.fillStyle =  _.hex2Rgb(set.color,0.6);
-                    ctx.strokeStyle = set.color;
+                    ctx.set('fillStyle',_.hex2Rgb(set.color,0.6)).set('strokeStyle',set.color);
+//                    ctx.fillStyle =  _.hex2Rgb(set.color,0.6);
+//                    ctx.strokeStyle = set.color;
                 }
                 _.each(set.data,function(d,j){
                     var x1 = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,

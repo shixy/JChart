@@ -19,8 +19,8 @@
             }else{
                 _.mergeObj(this.config,cfg);
             }
-            this.ctx = document.getElementById(this.config.id).getContext('2d');
-            var canvas = this.ctx.canvas;
+            this.ctx = _.Canvas(this.config.id);
+            var canvas = this.ctx.el;
             this.width = canvas.width;
             this.height = canvas.height;
             //High pixel density displays - multiply the size of the canvas height/width by the device pixel ratio, then scale.
@@ -118,7 +118,7 @@
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
             var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,
-	            offset = _.getOffset(this.ctx.canvas),
+	            offset = _.getOffset(this.ctx.el),
 	            hasTouch = 'ontouchstart' in window,
 				START_EV = hasTouch ? 'touchstart' : 'mousedown',
 				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
@@ -126,10 +126,10 @@
 				CANCEL_EV = hasTouch ? 'touchcancel' : 'mouseup',
 	            _this = this;
 
-            this.ctx.canvas.addEventListener(START_EV,touchstart);
-            this.ctx.canvas.addEventListener(MOVE_EV,touchmove);
-            this.ctx.canvas.addEventListener(END_EV,touchend);
-            this.ctx.canvas.addEventListener(CANCEL_EV,cancelAll);
+            this.ctx.el.addEventListener(START_EV,touchstart);
+            this.ctx.el.addEventListener(MOVE_EV,touchmove);
+            this.ctx.el.addEventListener(END_EV,touchend);
+            this.ctx.el.addEventListener(CANCEL_EV,cancelAll);
 
             function touchstart(e){
                 now = Date.now();

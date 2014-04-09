@@ -5,6 +5,7 @@
         this.data = this.chartData = data;
   		//配置项
         _.mergeObj(this.config,{
+            drawScaleFirst : false,
             //是否显示刻度文本背景
             showScaleLabelBackdrop : true,
             //刻度背景颜色
@@ -31,7 +32,7 @@
             this.on('_tap',tapHandler);
         }
         
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
         	this.initScale();
             if(noAnim){
                 this.drawAllSegments(1);
@@ -67,10 +68,7 @@
                 if (cfg.showGridLine){
                     this.ctx.circle(x, y, hop,false,cfg.gridLineColor,cfg.gridLineWidth)
                 }
-
                 if (cfg.showScaleLabel){
-                    this.ctx.set('textAlign','center')
-                        .set('font',cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily);
                     var label =  scale.yScaleValue.labels[i];
                     if (cfg.showScaleLabelBackdrop){
                         var textWidth = this.ctx.measureText(label).width;
@@ -84,7 +82,9 @@
                     }
                     this.ctx.fillText(label,x,y - hop,{
                         textBaseline : 'middle',
-                        fillStyle : cfg.scaleFontColor
+                        fillStyle : cfg.scaleFontColor,
+                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily,
+                        textAlign : 'center'
                     });
                 }
             }

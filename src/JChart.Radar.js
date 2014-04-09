@@ -6,6 +6,7 @@
         this.data = this.chartData = data;
         //配置项
         _.mergeObj(this.config, {
+            drawScaleFirst : false,
             //是否显示刻度文本背景
             scaleShowLabelBackdrop:true,
             //刻度背景颜色
@@ -22,11 +23,6 @@
             angleLineColor:"rgba(0,0,0,.1)",
             //角度分割线宽度
             angleLineWidth:1,
-            //数据标签文本字体属性
-            labelFontFamily:"'Arial'",
-            labelFontStyle:"normal",
-            labelFontSize:12,
-            labelFontColor:"#666",
             //是否显示线的连接点
             showPoint:true,
             //连接圆点半径
@@ -40,6 +36,7 @@
             //是否填充为面积图
             fill:true,
             showScaleLabel:true,
+            showLabel : false,
             gridLineColor:'rgb(0,0,0,.5)'
         });
 
@@ -50,7 +47,7 @@
             this.on('_tap', tapHandler);
         }
 
-        this.init = function (noAnim) {
+        this.draw = function (noAnim) {
             this.initScale();
             if (noAnim) {
                 this.drawAllDataPoints(1);
@@ -92,11 +89,10 @@
             ctx.save().translate(this.width / 2, this.height / 2);
             //显示角度分割线
             if (cfg.showAngleLine) {
-                ctx.set('lineWidth',cfg.angleLineWidth).set('strokeStyle',cfg.angleLineColor);
                 var w = scale.yHeight - (scale.yHeight % scale.yHop);
                 //画每个角度的分割线
                 for (var h = 0; h < dataLen; h++) {
-                    ctx.rotate(rotationDegree).beginPath().moveTo(0, 0).lineTo(0, -w).stroke();
+                    ctx.rotate(rotationDegree).line(0,0,0,-w,cfg.angleLineColor,cfg.angleLineWidth);
                 }
             }
             //画刻度线
@@ -104,7 +100,7 @@
                 var hop = scale.yHop * (i + 1);
                 ctx.beginPath();
                 if (cfg.showGridLine) {
-                    ctx.set('lineWidth',cfg.gridLineWidth).set(cfg.gridLineColor);
+                    ctx.set({strokeStyle : cfg.gridLineColor,lineWidth : cfg.gridLineWidth})
                     if (cfg.graphShape == 'diamond') {
                         ctx.moveTo(0, -hop);
                         for (var j = 0; j < dataLen; j++) {
@@ -113,13 +109,10 @@
                     } else {
                         ctx.circle(0, 0, hop);
                     }
-                    ctx.closePath();
-                    ctx.stroke();
+                    ctx.closePath().stroke();
                 }
                 //画刻度值
                 if (cfg.showScaleLabel) {
-                    this.ctx.set('textAlign','center').set('textBaseline','middle')
-                        .set('font',cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily);
                     var label =  scale.yScaleValue.labels[i];
                     //显示刻度值的背景
                     if (cfg.showScaleLabelBackdrop){
@@ -133,24 +126,30 @@
                         );
                     }
                     this.ctx.fillText(label,0,-hop,{
-                        fillStyle : cfg.scaleFontColor
+                        fillStyle : cfg.scaleFontColor,
+                        textAlign : 'center',
+                        textBaseline : 'middle',
+                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily
                     });
                 }
 
             }
+
+            //设置文本样式
+            this.ctx.set({
+                fillStyle : cfg.labelFontColor,
+                font : cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily
+            });
             //显示数据文本
             for (var k = 0; k < dataLen; k++) {
-                this.ctx.set('fillStyle',cfg.labelFontColor).set('font',cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily);
                 var opposite = Math.sin(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
                 var adjacent = Math.cos(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
                 var align;
                 if (rotationDegree * k == Math.PI || rotationDegree * k == 0) {
                     align = 'center';
-                }
-                else if (rotationDegree * k > Math.PI) {
+                } else if (rotationDegree * k > Math.PI) {
                     align = 'right';
-                }
-                else {
+                }else {
                     align = 'left';
                 }
                 ctx.fillText(this.data.labels[k], opposite, -adjacent,{textAlign:align});
@@ -171,29 +170,31 @@
                 _.each(set.data, function (d, j) {
                     if (j == 0)return true;
                     ctx.rotate(rotationDegree).lineTo(0, getY(d));
-                })
+                });
                 ctx.closePath();
-                ctx.fill(set.fillColor);
+                cfg.fill && ctx.fill(set.fillColor);
                 ctx.stroke(set.strokeColor,cfg.lineWidth);
 
                 //画连接点
-                if (cfg.showPoint) {
-                    _.each(set.data,function(d,j){
-                        var y = getY(d);
-                        ctx.rotate(rotationDegree)
-                            .circle(0, getY(d), cfg.pointRadius,set.pointColor,set.pointStrokeColor,cfg.pointBorderWidth);
-                        if(animPc >= 1){
-                            var p = getPosition(y,j);
-                            pointRanges.push([p[0],p[1],j,i]);
-                        }
-                    });
-                    ctx.rotate(rotationDegree);
-                }
+                _.each(set.data,function(d,j){
+                    var y = getY(d);
+                    if (cfg.showPoint) {
+                        ctx.rotate(rotationDegree).circle(0, y, cfg.pointRadius,set.pointColor,set.pointStrokeColor,cfg.pointBorderWidth);
+                    }
+                    if(animPc >= 1){
+                        var p = getPosition(y,j);
+                        pointRanges.push([p[0],p[1],j,i]);
+                    }
+                });
+                ctx.rotate(rotationDegree);
+
             }, this);
             ctx.restore();
-
+            if(cfg.showLabel){
+                drawText();
+            }
             function getY(d){
-                return animPc * (-1 * _this.calcOffset(d, scale.yScaleValue, scale.yHop))
+                return -animPc * _this.calcOffset(d, scale.yScaleValue, scale.yHop);
             }
             function getPosition(radius,i){
                 radius = Math.abs(radius);
@@ -203,6 +204,17 @@
                 y = Math.sin(angel)*radius + _this.height/2;
                 return [x,y];
             }
+        }
+
+        function drawText(){
+            _.each(pointRanges,function(p){
+                var y = p[1];
+                if(y > _this.height/2){
+                    y += 6;
+                }
+                _this.drawText(p[0],y,_this.data.datasets[p[3]].data[p[2]],p[2],p[3]);
+            });
+
         }
 
         function isInPointRange(x,y){
@@ -217,8 +229,6 @@
         }
         //初始化参数
         if (cfg)this.initial(cfg);
-
     }
-
     _.Radar = Radar;
 })(JChart);

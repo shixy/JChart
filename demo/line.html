@@ -45,6 +45,10 @@
     line.on('tap.point',function(data,i,j){
         alert(JSON.stringify(data));
     });
+    line.on('renderScaleLabel',function(v){
+        return v+'%';
+    })
+    line.refresh();
 
 </script>
 </body>

@@ -4,7 +4,7 @@
         var angleRanges;//记录每个扇形的起始角度（从0开始）
         var _this = this;
         this.data = data;
-        var pieRadius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1;
+        var radius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1,origin = {};
         _.mergeObj(this.config,{
             //border
             showSegmentBorder : true,
@@ -23,6 +23,7 @@
             //环形图
             isDount : false,
             dountRadiusPercent :0.4,
+            totalAngle : Math.PI*2,
             dountText : '',
             dountTextFont : 'bold 30px Arial',
             dountTextColor : '#e74c3c',
@@ -38,9 +39,10 @@
             angleRanges = [];
             _.each(_this.data,function(d,i){
                 var start = angle;
-                angle = angle + (d.value/segmentTotal) * (Math.PI*2);
+                var percent = d.value/segmentTotal
+                angle = angle + percent * _this.config.totalAngle;
                 var end = angle;
-                angleRanges.push([start,end,d,i]);
+                angleRanges.push([start,end,d,i,percent]);
             })
         }
 
@@ -67,7 +69,7 @@
         }
 
         /**
-         * 计算扇形真实的其实角度
+         * 计算扇形真实的角度
          */
         function calcSegmentAngle(range,percent,type){
             var start = range[0],
@@ -93,46 +95,50 @@
          * @param animPercent
          */
         function drawSegment(range,percent,type){
-            var x = _this.width/2,
-                y = _this.height/ 2,
-                index = range[3];
+            var x = origin.x,y = origin.y,cfg = _this.config,
+                index = range[3],angle = calcSegmentAngle(range,percent,type);
+
             if(index == currentPullOutIndex){
                 var midAngle = (range[0] + range[1])/2+startAngle;
-                x += Math.cos(midAngle) * _this.config.pullOutDistance;
-                y += Math.sin(midAngle) * _this.config.pullOutDistance;
+                x += Math.cos(midAngle) * cfg.pullOutDistance;
+                y += Math.sin(midAngle) * cfg.pullOutDistance;
             }
-            var angle = calcSegmentAngle(range,percent,type);
-            drawPiePart(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
-            if(percent>=1){
-                drawText(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
+            if(cfg.isDount){
+                _this.ctx.dountSector(x,y,radius*cfg.dountRadiusPercent,radius,angle.start,angle.end,_this.data[index].color);
+            }else{
+                _this.ctx.sector(x,y,radius,angle.start,angle.end,_this.data[index].color);
             }
+            cfg.showSegmentBorder && _this.ctx.stroke(cfg.segmentBorderColor,cfg.segmentBorderWidth);
+            //if(percent>=1){
+                drawText(x,y,radius,angle.start,angle.end,range);
+            //}
         }
 
-        function drawPiePart(x,y,r,start,end,data){
-            var color = data.color,borderColor,borderWidth;
-            if(_this.config.showSegmentBorder){
-                borderColor = _this.config.segmentBorderColor;
-                borderWidth = _this.config.segmentBorderWidth;
-            }
-            if(_this.config.isDount){
-                _this.ctx.dountSector(x,y,r*_this.config.dountRadiusPercent,r,start,end,color,borderColor,borderWidth);
-            }else{
-                _this.ctx.sector(x,y,r,start,end,color,borderColor,borderWidth);
-            }
-        }
         function drawText(x,y,r,start,end,data){
             //计算文本位置
-            var middAngle = (start+end)/2;
-            var d = r/2;
+            var text,middAngle = (start+end)/ 2, dis = r/ 2,
+                percent = data[4],d = data[2];
             if(_this.config.isDount){
-                d = r/2 + r*_this.config.dountRadiusPercent/2;
+                dis = r/2 + r*_this.config.dountRadiusPercent/2;
             }
-            var xaxis = Math.cos(middAngle) * d + x;
-            var yaxis = Math.sin(middAngle) * d + y;
-            _this.ctx.fillText('30%',xaxis,yaxis,{
+            percent = (percent * 100).toFixed(1)+'%';
+            var xaxis = Math.cos(middAngle) * dis + x;
+            var yaxis = Math.sin(middAngle) * dis + y;
+            _this.ctx.set({
+                textBaseline : 'middle',
+                textAlign : 'center',
+                font : _this.config.labelFontStyle + " " + _this.config.labelFontSize+"px " + _this.config.labelFontFamily,
+                fillStyle : _this.config.dountTextColor
+            });
+            text = _this.trigger('renderText',[percent,d,data[3]]);
+            text = text?text:percent;
+            _this.ctx.fillText(text,xaxis,yaxis);
+        }
+        function drawDountText(){
+            _this.ctx.fillText(_this.config.dountText,origin.x,origin.y,{
                 textBaseline : _this.config.dountTextBaseline,
                 textAlign : _this.config.dountTextAlign,
-                font : 'normal 20px Arial',
+                font : _this.config.dountTextFont,
                 fillStyle : _this.config.dountTextColor
             });
         }
@@ -162,19 +168,18 @@
                 }else{
                     _this.trigger(type,[angle[2],angle[3]]);
                 }
-
             }
         }
 
         function isInSegment(offsetX,offsetY){
             var angle;
-            var x = offsetX - _this.width/2;
-            var y = offsetY - _this.height/2;
+            var x = offsetX - origin.x;
+            var y = offsetY - origin.y;
             //距离圆点的距离
             var dfc = Math.sqrt( Math.pow( Math.abs(x), 2 ) + Math.pow( Math.abs(y), 2 ) );
-            var isInPie = (dfc <= pieRadius);
+            var isInPie = (dfc <= radius);
             if(isInPie && _this.config.isDount){//排除dount图中心区
-                isInPie = (dfc >= pieRadius*_this.config.dountRadiusPercent);
+                isInPie = (dfc >= radius*_this.config.dountRadiusPercent);
             }
             if(!isInPie)return;
 
@@ -240,11 +245,10 @@
             drawPie(1);
         }
         /**
-         * 初始化部分元素值
+         * 画图
          */
-        this.init = function(noAnim){
-            //计算半径(留10个像素)
-            pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
+        this.draw = function(noAnim){
+            calcOrigin();
             segmentTotal = 0;
             currentPullOutIndex = -1;
             _.each(_this.data,function(d){
@@ -258,16 +262,19 @@
             }
             startAngle = _this.config.startAngle;
         }
-
-        function drawDountText(){
-            _this.ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,{
-                textBaseline : _this.config.dountTextBaseline,
-                textAlign : _this.config.dountTextAlign,
-                font : _this.config.dountTextFont,
-                fillStyle : _this.config.dountTextColor
-            });
+        //计算原点位置及半径
+        function calcOrigin(){
+            if(_this.config.totalAngle == Math.PI){
+                origin = {
+                    x : _this.width/2,
+                    y : _this.height - 20
+                }
+                radius = Math.min(origin.x,origin.y) - 10;
+            }else{
+                origin = {x:_this.width/2,y:_this.height/2};
+                radius = Math.min(origin.x,origin.y) - 10;
+            }
         }
-
         //初始化参数
         if(cfg)this.initial(cfg);
     }

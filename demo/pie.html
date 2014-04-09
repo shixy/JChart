@@ -12,17 +12,21 @@
 <body>
 <canvas id="canvas1" height="450" width="450"></canvas>
 <canvas id="canvas2" height="450" width="450" style="margin-top: 10px;"></canvas>
+<canvas id="canvas3" height="200" width="450" ></canvas>
 <script type="text/javascript">
     var pieData = [
         {
+            name : 'A',
             value: 5,
             color:"#F38630"
         },
         {
+            name : 'B',
             value : 50,
             color : "#E0E4CC"
         },
         {
+            name : 'C',
             value : 100,
             color : "#69D2E7"
         }
@@ -34,9 +38,11 @@
         console.log('点击了第'+i+'个扇形');
         return true;
     })
-    p1.on('doubleTap.pie',function(i,data){
-        console.log('双击了第'+i+'个扇形');
-        return true;
+    p1.on('renderText',function(percent,data,i){
+        if(i == 0){
+            this.ctx.set('fillStyle','#fff');
+        }
+        return data.value;
     })
     p1.on('animationComplete',function(){
         console.log('动画执行完毕');
@@ -51,16 +57,27 @@
 	p1.on('pullOut',function(i,data){
 		console.log('第'+i+'个扇形已经弹出');
 	});
+    p1.draw();
+
     var p2 = new JChart.Pie(pieData,{
         id : 'canvas2',
-        clickType : 'rotate',
         isDount : true,
+        clickType : 'rotate',
         dountText : 'CPU'
     });
     p2.on('click',function(i,data){
         p2.setDountText(data.value);
         return true;
     });
+    p2.draw();
+    var p3 = new JChart.Pie(pieData,{
+        id : 'canvas3',
+        isDount : true,
+        clickType : null,
+        startAngle : -Math.PI,
+        totalAngle : Math.PI,
+        dountText : 'CPU'
+    }).draw();
 </script>
 </body>
 </html>

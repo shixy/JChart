@@ -1,6 +1,14 @@
 ;(function(_){
     var Chart = function(){
         this.config = {
+            //优先画刻度
+            drawScaleFirst : true,
+            //文本字体属性
+            showLabel : true,
+            labelFontFamily : "Arial",
+            labelFontSize : 20,
+            labelFontStyle : "normal",
+            labelFontColor : "#5b5b5b",
             //是否开启动画
             animation : true,
             //动画帧数
@@ -32,12 +40,11 @@
                 canvas.width = this.width * window.devicePixelRatio;
                 this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
             }
-            this.init();
             this.bindTouchEvents();
             this.bindEvents();
         };
         this.clear = function(){
-            this.ctx.clearRect(0,0,this.width,this.height);
+            this.ctx.clear();
         };
         /**
          * 更新
@@ -46,7 +53,7 @@
             if(config){
                _.mergeObj(this.config,config);
             }
-            this.init();
+            this.draw();
         };
         /**
          * 加载数据
@@ -57,7 +64,7 @@
             this.data = data;
             config && _.mergeObj(this.config,config);
             this.clear();
-            this.init(true);
+            this.draw(true);
         }
         /**
          * 动画函数
@@ -92,8 +99,13 @@
             function animateFrame(){
                 _this.clear();
                 var animPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),null,0) : 1;
-                drawData.call(_this,animPercent);
-                drawScale.call(_this);
+                if(_this.config.drawScaleFirst){
+                    drawScale.call(_this);
+                    drawData.call(_this,animPercent);
+                }else{
+                    drawData.call(_this,animPercent);
+                    drawScale.call(_this);
+                }
             };
         }
         /**

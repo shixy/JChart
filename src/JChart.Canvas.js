@@ -38,7 +38,13 @@
              * @return this
              */
             set : function(name,value){
-                this.ctx[name] = value;
+                if(typeof name == 'object'){
+                    for(var p in name){
+                        this.ctx[p] = name[p];
+                    }
+                }else{
+                    this.ctx[name] = value;
+                }
                 return this;
             },
             /**
@@ -74,13 +80,31 @@
                 this.ctx.stroke();
                 return this;
             },
+            /**
+             * 填充文本，在文本中加入\n可实现换行
+             * @param text
+             * @param x
+             * @param y
+             * @param style
+             * @return {*}
+             */
             fillText : function(text,x,y,style){
+                this.ctx.save();
                 if(style && typeof style == 'object'){
                     for(var p in style){
                         this.set(p,style[p]);
                     }
                 }
-                this.ctx.fillText(text,x,y);
+                var texts = (text+'').split('\n');
+                if(texts.length > 1){
+                    var fontsize = this.getFontSize();
+                    for(var i=0;i<texts.length;i++){
+                        this.ctx.fillText(texts[i],x,y+i*fontsize);
+                    }
+                }else{
+                    this.ctx.fillText(text,x,y);
+                }
+                this.ctx.restore();
                 return this;
             },
             /**
@@ -115,8 +139,10 @@
             /**
              * 画线
              */
-            line : function(){
-
+            line : function(x,y,x1,y1,stroke,strokeWidth){
+                this.beginPath().moveTo(x,y).lineTo(x1,y1);
+                stroke && this.stroke(stroke,strokeWidth);
+                return this;
             },
             /**
              * 画矩形
@@ -218,6 +244,17 @@
                     cb();
                 }
                 return this;
+            },
+            /**
+             * 获取canvas当前的字体大小
+             * @return {Boolean}
+             */
+            getFontSize : function(){
+                var size = this.ctx.font.match(/\d+(?=px)/i);
+                if(size){
+                    size = parseInt(size[0]);
+                }
+                return size;
             }
         }
         return new Canvas();

@@ -35,7 +35,7 @@
         /**
          * 初始化部分元素值
          */
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
             if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetShowNumber){
                 this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetShowNumber);
             }else{
@@ -60,35 +60,25 @@
         this.drawBars = function(animPc){
             if(animPc >= 1)barRanges = [];
             var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
-            ctx.lineWidth = config.barBorderWidth;
             _.each(_this.chartData.datasets,function(set,i){
-                if(set.borderColor){
-                    ctx.set('fillStyle',set.color).set('strokeStyle',set.borderColor);
-//                    ctx.fillStyle = set.color;
-//                    ctx.strokeStyle = set.borderColor;
-                }else{
-                    ctx.set('fillStyle',_.hex2Rgb(set.color,0.6)).set('strokeStyle',set.color);
-//                    ctx.fillStyle =  _.hex2Rgb(set.color,0.6);
-//                    ctx.strokeStyle = set.color;
-                }
+                if(!config.showBarBorder)borderColor = null;
                 _.each(set.data,function(d,j){
-                    var x1 = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,
-                        y1 = scale.y,x2 = x1 + scale.barWidth,
-                        y2 = scale.y - animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2);
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x1, y2);
-                    ctx.lineTo(x2,y2);
-                    ctx.lineTo(x2, y1);
+                    var x = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,
+                        y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2),
+                        color = set.color,borderColor;
                     if(config.showBarBorder){
-                        ctx.stroke();
+                        borderColor = set.borderColor
+                        //如果在数据源中没有配置borderColor，依据color自动生成一组背景色与边框色
+                        if(!borderColor){
+                            borderColor = color;
+                            color = _.hex2Rgb(color,0.6);
+                        }
                     }
-                    ctx.closePath();
-                    ctx.fill();
+                    ctx.rect(x,y,width,-height,color,borderColor,config.barBorderWidth);
                     if(animPc >= 1){
-                        barRanges.push([x1,x2,y1,y2,j,i]);
+                        barRanges.push([x,x+width,y,y-height,j,i]);
                     }
-                    config.showLabel && _this.drawText((x1+x2)/2,y2+3,d);
+                    config.showLabel && _this.drawText(x+width/2,y-height,d);
 
                 });
             })

@@ -22,7 +22,7 @@
              */
             scale : null,
             //xy轴刻度线的颜色
-            scaleLineColor : "rgba(0,0,0,.1)",
+            scaleLineColor : "rgba(0,0,0,.3)",
             //刻度线宽度
             scaleLineWidth :1,
             //是否显示刻度值
@@ -32,12 +32,6 @@
             scaleFontSize : 12,
             scaleFontStyle : "normal",
             scaleFontColor : "#666",
-            //刻度值字体属性
-            showLabel : true,
-            labelFontFamily : "Arial",
-            labelFontSize : 12,
-            labelFontStyle : "normal",
-            labelFontColor : "#5b5b5b",
             //是否显示网格线
             showGridLine : true,
             //网格线颜色
@@ -151,7 +145,6 @@
         this.calcXAxis = function(){
             var config = this.config,scale = this.scaleData,yLabelWidth = 0,xAxisLength,valueHop, x,y;
             if (config.showScaleLabel){
-                //this.ctx.font = config.scaleFontStyle + " " + config.scaleFontSize+"px " + config.scaleFontFamily;
                 //找出Y轴刻度的最宽值
                 _.each(scale.yScaleValue.labels,function(o){
                     var w = this.ctx.measureText(o).width;
@@ -177,77 +170,47 @@
         }
 
         this.drawScale = function(){
-            var ctx = this.ctx,config = this.config,scale = this.scaleData;
-            //画X轴数据项
-            ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
-            ctx.beginPath();
-            ctx.moveTo(scale.x-3,scale.y);
-            ctx.lineTo(scale.x+scale.xWidth,scale.y);
-            ctx.stroke();
-
+            var ctx = this.ctx,config = this.config,scale = this.scaleData,align;
+            //画X轴
+            ctx.line(scale.x-3, scale.y, scale.x+scale.xWidth, scale.y, config.scaleLineColor, config.scaleLineWidth);
+            //画X轴刻度文本
             if (scale.labelRotate > 0){
                 ctx.save();
-                ctx.set('textAlign','right');
-               // ctx.textAlign = "right";
+                align = 'right';
+            }else{
+                align = 'center';
             }
-            else{
-                ctx.set('textAlign','center');
-                //ctx.textAlign = "center";
-            }
-            ctx.set('fillStyle',config.scaleFontColor).set('textBaseline','hanging');
+            ctx.set({
+                fillStyle : config.scaleFontColor,
+                textBaseline : 'hanging',
+                textAlign : align
+            })
             _.each(this.chartData.labels,function(label,i){
                 ctx.save();
-                var labelX = scale.x + i*scale.xHop,labelY = scale.y + P_X/2;
-                if(this._type_ == 'bar'){
-                    labelX += scale.xHop/2;
-                }
+                var cx = scale.x + i*scale.xHop,labelY = scale.y + P_X/ 2,
+                    labelX = this._type_ == 'bar'?cx + scale.xHop/2 : cx;
                 if (scale.labelRotate > 0){
-                    ctx.translate(labelX,labelY);
-                    ctx.rotate(-(scale.labelRotate * (Math.PI/180)));
-                    ctx.fillText(label, 0,0);
-                    ctx.restore();
+                    ctx.translate(labelX,labelY).rotate(-(scale.labelRotate * (Math.PI/180))).fillText(label,0,0).restore();
                 }else{
                     ctx.fillText(label, labelX,labelY);
                 }
 
-                ctx.beginPath();
-
-                if(this._type_ == 'bar'){
-                    ctx.moveTo(scale.x + (i+1) * scale.xHop, scale.y);
-                    drawGridLine(scale.x + (i+1) * scale.xHop, scale.y-scale.yHeight);
-                }else{
-                    ctx.moveTo(scale.x + i * scale.xHop, scale.y);
-                    if(config.showGridLine){
-                        drawGridLine(scale.x + i * scale.xHop, scale.y-scale.yHeight);
-                    }
+                //画纵向的网格线
+                if(config.showGridLine){
+                    var x = (this._type_ == 'bar')?cx + scale.xHop : cx;
+                    ctx.line(x, scale.y, x, scale.y-scale.yHeight, config.gridLineColor, config.gridLineWidth);
                 }
-                ctx.stroke();
             },this);
 
             //画Y轴
-            ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
-            ctx.beginPath();
-            ctx.moveTo(scale.x,scale.y+3);
-            ctx.lineTo(scale.x,scale.y-scale.yHeight);
-            ctx.stroke();
+            ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, config.scaleLineColor, config.scaleLineWidth);
 
+            //画横向网格线
             ctx.set('textAlign','right').set('textBaseline','middle');
             for (var j=0; j<scale.yScaleValue.step; j++){
                 var y = scale.y - ((j+1) * scale.yHop);
-                ctx.beginPath();
-                ctx.moveTo(scale.x,y);
-                if (config.showGridLine){
-                    drawGridLine(scale.x + scale.xWidth,y);
-                }
-                ctx.stroke();
-                if (config.showScaleLabel){
-                    ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
-                }
-            }
-            function drawGridLine(x,y){
-                ctx.set('lineWidth',config.scaleLineWidth).set('strokeStyle',config.scaleLineColor);
-                //1px线条模糊问题
-                ctx.lineTo(x+0.5, y+0.5);
+                config.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, config.gridLineColor, config.gridLineWidth);
+                config.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
             }
         }
 
@@ -257,13 +220,15 @@
             showX && this.calcXAxis();
         }
 
-        this.drawText = function(x,y,value){
-            this.ctx.save().fillText(value,x,y-3,{
+        this.drawText = function(x,y,value,j,i){
+            var text = this.trigger('renderText',[value,j,j]);
+            text = text?text:value;
+            this.ctx.fillText(text,x,y-3,{
                 textBaseline : 'bottom',
                 textAlign : 'center',
                 fillStyle : this.config.labelFontColor,
                 font : this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily
-            }).restore();
+            });
         }
 
         this.drawPoint = function(x,y,d){
@@ -336,8 +301,9 @@
                 }
                 //小数点位数与stepValue后的小数点一致
                 var value = (start + (stepValue * i)).toFixed(_.getDecimalPlaces(stepValue));
-                var v = this.trigger('renderScaleLabel',[value]);
-                labels.push(v ? v : value);
+                var text = this.trigger('renderYLabel',[value]);
+                text = text ? text : value;
+                labels.push(text);
             }
             return labels;
         },

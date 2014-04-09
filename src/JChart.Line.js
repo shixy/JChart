@@ -39,7 +39,7 @@
         /**
          * 初始化部分元素值
          */
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
             if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetShowNumber){
                 this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetShowNumber);
             }else{
@@ -64,12 +64,12 @@
             if(animPc >= 1)pointRanges = [];
             var ctx = _this.ctx,config = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
             _.each(dataset,function(set,i){
-                ctx.set('lineWidth',config.lineWidth).set('strokeStyle',set.color).beginPath()
-                    .moveTo(scale.x, scale.y - animPc*(_this.calcOffset(set.data[0],scale.yScaleValue,scale.yHop)));
+                //画连接线
+                ctx.beginPath().moveTo(scale.x, yPos(i,0));
                 _.each(set.data,function(d,j){
                     var pointX = xPos(j),pointY = yPos(i,j);
                     if (config.smooth){//贝塞尔曲线
-                        ctx.bezierCurveTo(xPos(j-0.5),yPos(i,j-1),xPos(j-0.5),yPos(i,j),pointX,pointY);
+                        ctx.bezierCurveTo(xPos(j-0.5),yPos(i,j-1),xPos(j-0.5),pointY,pointX,pointY);
                     }else{
                         ctx.lineTo(pointX,pointY);
                     }
@@ -77,33 +77,25 @@
                         pointRanges.push([pointX,pointY,j,i]);
                     }
                 });
-                ctx.stroke();
-                if (config.fill){
-                    ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y)
-                        .lineTo(scale.x,scale.y).closePath();
-                    if(set.fillColor){
-                        ctx.set('fillStyle',set.fillColor);
-                    }else{
-                        ctx.set('fillStyle',_.hex2Rgb(set.color,0.6));
-                    }
-                    ctx.fill();
-                } else{
-                    ctx.closePath();
-                }
+                ctx.stroke(set.color,config.lineWidth);
+
+                //填充区域
+                config.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
+                    .fill(set.fillColor?set.fillColor : _.hex2Rgb(set.color,0.6)) : ctx.closePath();
+
                 //画点以及点上文本
                 _.each(set.data,function(d,k){
-                    var x = scale.x + (scale.xHop *k),
-                        y = scale.y - animPc*(_this.calcOffset(d,scale.yScaleValue,scale.yHop));
+                    var x = xPos(k),y = yPos(i,k);
                     config.showPoint && _this.drawPoint(x,y,set);
                     config.showLabel && _this.drawText(x,y,d);
                 });
             });
 
-            function yPos(dataSet,iteration){
-                return scale.y - animPc*(_this.calcOffset(dataset[dataSet].data[iteration],scale.yScaleValue,scale.yHop));
+            function yPos(i,j){
+                return scale.y - animPc*(_this.calcOffset(dataset[i].data[j],scale.yScaleValue,scale.yHop));
             }
-            function xPos(iteration){
-                return scale.x + (scale.xHop * iteration);
+            function xPos(i){
+                return scale.x + (scale.xHop * i);
             }
         }
         function tapHandler(x,y){

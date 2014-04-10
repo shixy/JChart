@@ -4,7 +4,7 @@
         var _this = this;
         this.data = this.chartData = data;
   		//配置项
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             drawScaleFirst : false,
             //是否显示刻度文本背景
             showScaleLabelBackdrop : true,
@@ -33,6 +33,7 @@
         }
         
         this.draw = function(noAnim){
+            this.mergeFont(['scaleFont','textFont']);
         	this.initScale();
             if(noAnim){
                 this.drawAllSegments(1);
@@ -48,69 +49,57 @@
         }
         this.calcDrawingSizes = function(){
             var maxSize = Math.min(this.width,this.height)/2,
-                cfg = this.config,
-                labelHeight = cfg.scaleFontSize*2;
+                cfg = this.config,size = cfg.scaleFont.size,lh = size*2;
 
-            maxSize -= Math.max(cfg.scaleFontSize*0.5,cfg.scaleLineWidth*0.5);
+            maxSize -= Math.max(size*0.5,cfg.scaleLineWidth*0.5);
             if (cfg.showScaleLabelBackdrop){
-                labelHeight += (2 * cfg.scaleBackdropPaddingY);
+                lh += (2 * cfg.scaleBackdropPaddingY);
                 maxSize -= cfg.scaleBackdropPaddingY*1.5;
             }
             this.scaleData.yHeight = maxSize;
-            this.scaleData.yLabelHeight = labelHeight;
+            this.scaleData.yLabelHeight = lh;
         }
         
         this.drawScale = function(){
         	var cfg = this.config,scale = this.scaleData,x = this.width/2, y = this.height/2
-                px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
+                size = cfg.scaleFont.size,px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
             for (var i=0; i<scale.yScaleValue.step; i++){
                 var hop = scale.yHop * (i + 1);
-                if (cfg.showGridLine){
-                    this.ctx.circle(x, y, hop,false,cfg.gridLineColor,cfg.gridLineWidth)
-                }
+                cfg.showGridLine && this.ctx.circle(x, y, hop,false,cfg.gridLineColor,cfg.gridLineWidth);
                 if (cfg.showScaleLabel){
                     var label =  scale.yScaleValue.labels[i];
                     if (cfg.showScaleLabelBackdrop){
                         var textWidth = this.ctx.measureText(label).width;
                         this.ctx.rect(
                             Math.round(x - textWidth/2 - px),     //X
-                            Math.round(y - hop - cfg.scaleFontSize*0.5 - py),//Y
+                            Math.round(y - hop - size/2 - py),//Y
                             Math.round(textWidth + px*2), //Width
-                            Math.round(cfg.scaleFontSize + py*2), //Height
+                            Math.round(size + py*2), //Height
                             cfg.scaleBackdropColor
                         );
                     }
-                    this.ctx.fillText(label,x,y - hop,{
-                        textBaseline : 'middle',
-                        fillStyle : cfg.scaleFontColor,
-                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily,
-                        textAlign : 'center'
-                    });
+                    this.ctx.fillText(label,x,y - hop,cfg.scaleFont);
                 }
             }
         }
 
         this.drawAllSegments = function(animPc){
             var startAngle = -Math.PI/2,angleStep = (Math.PI*2)/this.data.length,
-                scaleAnimation = 1,rotateAnimation = 1,
+               scaleAnim = 1,rotateAnim = 1,
                 scale = this.scaleData,cfg = this.config,
                 borderColor,borderWidth;
             if (cfg.animation) {
-                if (cfg.animateScale) {
-                    scaleAnimation = animPc;
-                }
-                if (cfg.animateRotate){
-                    rotateAnimation = animPc;
-                }
+                cfg.animateScale && (scaleAnim = animPc);
+                cfg.animateRotate && (rotateAnim = animPc);
             }
             if(cfg.showSegmentBorder){
                 borderColor = cfg.segmentBorderColor;
                 borderWidth = cfg.segmentBorderWidth;
             }
             _.each(this.data,function(d){
-                var r = scaleAnimation * this.calcOffset(d.value,scale.yScaleValue,scale.yHop);
-                this.ctx.sector(this.width/2,this.height/2,r,startAngle, startAngle + rotateAnimation*angleStep,d.color,borderColor,borderWidth);
-                startAngle += rotateAnimation*angleStep;
+                var r = scaleAnim * this.calcOffset(d.value,scale.yScaleValue,scale.yHop);
+                this.ctx.sector(this.width/2,this.height/2,r,startAngle, startAngle + rotateAnim*angleStep,d.color,borderColor,borderWidth);
+                startAngle += rotateAnim*angleStep;
             },this);
         }
 

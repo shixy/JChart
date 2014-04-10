@@ -4,17 +4,22 @@
             //优先画刻度
             drawScaleFirst : true,
             //文本字体属性
-            showLabel : true,
-            labelFontFamily : "Arial",
-            labelFontSize : 20,
-            labelFontStyle : "normal",
-            labelFontColor : "#5b5b5b",
+            showText : true,
+            textFont : {},
             //是否开启动画
             animation : true,
             //动画帧数
             animationSteps : 60,
             //动画函数
             animationEasing : "easeOutBounce"
+        }
+        this.defaultFont = {
+            family : 'Arial',
+            size : 16,
+            style : 'normal',
+            color : '#5b5b5b',
+            textAlign : 'center',
+            textBaseLine : 'Middle'
         }
         this.events = {};
         /**
@@ -25,7 +30,7 @@
             if(typeof cfg == 'string'){
                 this.config.id = cfg;
             }else{
-                _.mergeObj(this.config,cfg);
+                _.extend(this.config,cfg);
             }
             this.ctx = _.Canvas(this.config.id);
             var canvas = this.ctx.el;
@@ -51,7 +56,7 @@
          */
         this.refresh = function(config){
             if(config){
-               _.mergeObj(this.config,config);
+               _.extend(this.config,config);
             }
             this.draw();
         };
@@ -62,9 +67,22 @@
          */
         this.load = function(data,config){
             this.data = data;
-            config && _.mergeObj(this.config,config);
+            config && _.extend(this.config,config);
             this.clear();
             this.draw(true);
+        }
+        this.mergeFont = function(key){
+            if(key instanceof Array){
+                _.each(key,function(v){
+                    this.mergeFont(v);
+                },this);
+            }else{
+                var of = this.config[key];
+                var f = _.extend({},this.defaultFont,of);
+                f.font = f.style + " " + f.size+"px " + f.family;
+                f.fillStyle = f.color;
+                this.config[key] = f;
+            }
         }
         /**
          * 动画函数
@@ -126,6 +144,14 @@
             }else{
                 return null;
             }
+        };
+        this.drawText = function(text,x,y,args,style){
+            this.ctx.set(this.config.textFont);
+            style && this.ctx.set(style);
+            args = args ? [text].concat(args) : [text];
+            var t = this.trigger('renderText',args);
+            t = t?t:text;
+            this.ctx.fillText(t,x,y);
         };
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){

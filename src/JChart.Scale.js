@@ -10,7 +10,7 @@
             P_Y = 20,//y轴左侧空白
             P_X = 10;//x轴文本与x之间的间距
         _.Chart.apply(this);
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             /**
              * @Object
              * Y轴刻度值，默认为null，会自动生成，也可以自己指定
@@ -24,18 +24,22 @@
             //xy轴刻度线的颜色
             scaleLineColor : "rgba(0,0,0,.3)",
             //刻度线宽度
-            scaleLineWidth :1,
+            scaleLineWidth:1,
             //是否显示刻度值
             showScaleLabel : true,
             //刻度值字体属性
-            scaleFontFamily : "Arial",
-            scaleFontSize : 12,
-            scaleFontStyle : "normal",
-            scaleFontColor : "#666",
+            scaleFont : {
+                size:12,
+                color : '#666'
+            },
+            textFont : {
+                size : 14,
+                textBaseline : 'bottom'
+            },
             //是否显示网格线
             showGridLine : true,
             //网格线颜色
-            gridLineColor : "rgba(0,0,0,.05)",
+            gridLineColor : "rgba(0,0,0,.1)",
             //网格线宽度
             gridLineWidth : 1
         })
@@ -57,9 +61,10 @@
          * 计算X轴文本宽度、旋转角度及Y轴高度
          */
         this.calcDrawingSizes = function(){
-            var maxSize = this.height,widestX = 0,xLabelWidth = 0,xLabelHeight = this.config.scaleFontSize,labelRotate = 0,dataLen = this.chartData.labels.length;
+            var maxSize = this.height,widestX = 0,scaleFontSize = this.config.scaleFont.size, xLabelWidth = 0,xLabelHeight = scaleFontSize,
+                labelRotate = 0,dataLen = this.chartData.labels.length;
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
-            this.ctx.set('font',this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily);
+            this.ctx.set(this.config.scaleFont);
             //找出最宽的label
             _.each(this.chartData.labels,function(o){
                 var w = this.ctx.measureText(o).width;
@@ -72,23 +77,21 @@
                 xLabelHeight = Math.sin(labelRotate*Math.PI/180) * widestX ;
                 if (this.width/dataLen < xLabelHeight){
                     labelRotate = 90;
-                    xLabelWidth = this.config.scaleFontSize;
+                    xLabelWidth = scaleFontSize;
                     xLabelHeight = widestX;
                 }
-
             }
             //减去x轴label的高度
             maxSize -= xLabelHeight;
             //减去x轴文本与x轴之间的间距
             maxSize -= P_X;
             //给Y轴顶部留一点空白
-            P_T += this.config.showLabel?this.config.labelFontSize:0;
             maxSize -= P_T;
-
+            maxSize -= this.config.showText?scaleFontSize:0;
             //y轴高度
             this.scaleData.yHeight = maxSize;
             //y轴刻度高度
-            this.scaleData.yLabelHeight = this.config.scaleFontSize;
+            this.scaleData.yLabelHeight = scaleFontSize;
             //x轴文本旋转角度
             this.scaleData.labelRotate = labelRotate;
             //x轴文本的宽度
@@ -127,12 +130,12 @@
          * 计算Y轴刻度的各项数据
          */
         this.calcYAxis = function(){
-            var config = this.config,scale = config.scale;
+            var scale = this.config.scale;
             if (scale){
                 scale.start = scale.start || 0;
                 scale.labels = this.populateLabels(scale.step,scale.start,scale.stepValue);
             }else {
-                var bounds = this.getValueBounds(this.chartData.datasets ? this.chartData.datasets : this.chartData);
+                var bounds = this.getValueBounds(this.chartData.datasets || this.chartData);
                 scale = this.calcScale(this.scaleData.yHeight,bounds.maxSteps,bounds.minSteps,bounds.maxValue,bounds.minValue);
             }
             this.scaleData.yScaleValue = scale;
@@ -153,8 +156,7 @@
                 yLabelWidth += P_Y;
             }
             //x轴的宽度
-            P_R += this.config.showLabel?this.config.labelFontSize:0;
-            xAxisLength = this.width - yLabelWidth-P_R;
+            xAxisLength = this.width - yLabelWidth-P_R-(this.config.showText?this.config.textFont.size:0);
 
             if(this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
                 valueHop = Math.floor(xAxisLength/this.chartData.labels.length);
@@ -170,9 +172,16 @@
         }
 
         this.drawScale = function(){
-            var ctx = this.ctx,config = this.config,scale = this.scaleData,align;
+            var ctx = this.ctx,cfg = this.config,scale = this.scaleData,align;
+            ctx.set({
+                strokeStyle :  cfg.scaleLineColor,
+                lineWidth : cfg.scaleLineWidth
+            })
             //画X轴
-            ctx.line(scale.x-3, scale.y, scale.x+scale.xWidth, scale.y, config.scaleLineColor, config.scaleLineWidth);
+            ctx.line(scale.x-3, scale.y, scale.x+scale.xWidth, scale.y, true);
+            //画Y轴
+            ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, true);
+
             //画X轴刻度文本
             if (scale.labelRotate > 0){
                 ctx.save();
@@ -181,10 +190,12 @@
                 align = 'center';
             }
             ctx.set({
-                fillStyle : config.scaleFontColor,
+                fillStyle : cfg.scaleFont.color,
+                textAlign : align,
                 textBaseline : 'hanging',
-                textAlign : align
-            })
+                strokeStyle : cfg.gridLineColor,
+                lineWidth : cfg.gridLineWidth
+            });
             _.each(this.chartData.labels,function(label,i){
                 ctx.save();
                 var cx = scale.x + i*scale.xHop,labelY = scale.y + P_X/ 2,
@@ -194,23 +205,19 @@
                 }else{
                     ctx.fillText(label, labelX,labelY);
                 }
-
                 //画纵向的网格线
-                if(config.showGridLine){
+                if(cfg.showGridLine){
                     var x = (this._type_ == 'bar')?cx + scale.xHop : cx;
-                    ctx.line(x, scale.y, x, scale.y-scale.yHeight, config.gridLineColor, config.gridLineWidth);
+                    ctx.line(x, scale.y, x, scale.y-scale.yHeight,true);
                 }
             },this);
 
-            //画Y轴
-            ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, config.scaleLineColor, config.scaleLineWidth);
-
             //画横向网格线
-            ctx.set('textAlign','right').set('textBaseline','middle');
+            ctx.set({textAlign:'right',textBaseline:'middle'});
             for (var j=0; j<scale.yScaleValue.step; j++){
                 var y = scale.y - ((j+1) * scale.yHop);
-                config.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, config.gridLineColor, config.gridLineWidth);
-                config.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
+                cfg.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, true);
+                cfg.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
             }
         }
 
@@ -220,16 +227,11 @@
             showX && this.calcXAxis();
         }
 
-        this.drawText = function(x,y,value,j,i){
-            var text = this.trigger('renderText',[value,j,j]);
-            text = text?text:value;
-            this.ctx.fillText(text,x,y-3,{
-                textBaseline : 'bottom',
-                textAlign : 'center',
-                fillStyle : this.config.labelFontColor,
-                font : this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily
-            });
-        }
+//        this.drawText = function(x,y,value,j,i){
+//            var text = this.trigger('renderText',[value,j,j]);
+//            text = text?text:value;
+//            this.ctx.fillText(text,x,y,this.config.textFont);
+//        }
 
         this.drawPoint = function(x,y,d){
             //填充色默认为白色，边框颜色默认与线条颜色一致
@@ -331,7 +333,7 @@
             var _this = this,
             	touchDistanceX,//手指滑动偏移量
                 startPosition,//触摸初始位置记录
-                dataOffset = 0,//数据偏移量
+                dataOffset = 0,//数据偏移量-已经偏移
                 currentOffset = 0,//当前一次滑动的偏移量
                 dataNum = this.config.datasetShowNumber,//每屏显示的数据条数
                 gestureStarted,
@@ -340,9 +342,9 @@
 				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
 				END_EV = hasTouch ? 'touchend' : 'mouseup';
 
-            this.ctx.canvas.addEventListener(START_EV,touchstart);
-            this.ctx.canvas.addEventListener(MOVE_EV,touchmove);
-            this.ctx.canvas.addEventListener(END_EV,touchend);
+            this.ctx.el.addEventListener(START_EV,touchstart);
+            this.ctx.el.addEventListener(MOVE_EV,touchmove);
+            this.ctx.el.addEventListener(END_EV,touchend);
 
             function touchstart(e){
             	e = e.touches ? e.touches[0] : e;
@@ -359,19 +361,16 @@
                 var x = e.pageX;
                 var y = e.pageY;
                 touchDistanceX = x - startPosition.x;
-				//允许1/10的误差范围
-                //if(touchDistanceX%_this.scaleData.xHop < _this.scaleData.xHop/10){
-            	if(Math.floor(touchDistanceX)%20 < 10){//每滑动20px加载下一组数据，中间偶尔可能会重复加载
-                    var totalLen = _this.data.labels.length;//数据总长度
-                    var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
-                    if(offset+dataNum > totalLen)return;
-                    if(offset < 0)return;
-                    currentOffset = offset;
-                    //将操作加入系统队列，解决android系统下touchmove的bug
-                    setTimeout(function(){
-                    	_this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
-                    },0)
-                }
+            	//每滑动xHop加载下一组数据
+                var totalLen = _this.data.labels.length;//数据总长度
+                var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
+                if(offset < 0 || offset == currentOffset||(offset+dataNum > totalLen))return;
+                currentOffset = offset;
+                console.log(offset);
+                //将操作加入系统队列，解决android系统下touchmove的bug
+                setTimeout(function(){
+                    _this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
+                },0)
             }
             function touchend(event){
                 gestureStarted = false;

@@ -4,8 +4,9 @@
         var angleRanges;//记录每个扇形的起始角度（从0开始）
         var _this = this;
         this.data = data;
-        var radius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1,origin = {};
-        _.mergeObj(this.config,{
+        var radius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentOutIndex = -1,origin = {};
+        //覆盖配置项
+        _.extend(this.config,{
             //border
             showSegmentBorder : true,
             //border color
@@ -25,11 +26,12 @@
             dountRadiusPercent :0.4,
             totalAngle : Math.PI*2,
             dountText : '',
-            dountTextFont : 'bold 30px Arial',
-            dountTextColor : '#e74c3c',
-            dountTextBaseline : 'middle',
-            dountTextAlign : 'center'
-        })
+            dountFont : {
+                size : 20,
+                style : 600,
+                color : '#3498DB'
+            }
+        });
         /**
          * 计算各个扇形的起始角度
          * @param data
@@ -39,7 +41,7 @@
             angleRanges = [];
             _.each(_this.data,function(d,i){
                 var start = angle;
-                var percent = d.value/segmentTotal
+                var percent = d.value/segmentTotal;
                 angle = angle + percent * _this.config.totalAngle;
                 var end = angle;
                 angleRanges.push([start,end,d,i,percent]);
@@ -56,32 +58,26 @@
          */
         function drawPie (percent,type){
             _this.clear();
-            var animPercent = 1;
-            if (_this.config.animation) {
-                animPercent = percent;
-            }
+            percent = _this.config.animation ? percent : 1;
             _.each(angleRanges,function(a){
-                drawSegment(a,animPercent,type);
+                drawSector(a,percent,type);
             });
-            if(_this.config.isDount && _this.config.dountText){
-                drawDountText();
-            }
+            _this.config.isDount && _this.config.dountText && drawDountText();
         }
 
         /**
          * 计算扇形真实的角度
          */
-        function calcSegmentAngle(range,percent,type){
-            var start = range[0],
-                end = range[1];
-            if(type == 'rotate'){
+        function calcSegmentAngle(r,p,t){
+            var start = r[0],end = r[1];
+            if(t == 'rotate'){
                 //旋转
-                start = start + startAngle + rotateAngle*percent;
-                end = end + startAngle + rotateAngle*percent;
+                start = start + startAngle + rotateAngle*p;
+                end = end + startAngle + rotateAngle*p;
             }else{
                 //默认动画
-                start = start*percent + startAngle;
-                end = end*percent + startAngle
+                start = start*p + startAngle;
+                end = end*p + startAngle
             }
             return {
                 start : start,
@@ -94,12 +90,12 @@
          * @param i
          * @param animPercent
          */
-        function drawSegment(range,percent,type){
+        function drawSector(r,p,t){
             var x = origin.x,y = origin.y,cfg = _this.config,
-                index = range[3],angle = calcSegmentAngle(range,percent,type);
+                index = r[3],angle = calcSegmentAngle(r,p,t);
 
-            if(index == currentPullOutIndex){
-                var midAngle = (range[0] + range[1])/2+startAngle;
+            if(index == currentOutIndex){
+                var midAngle = (r[0] + r[1])/2+startAngle;
                 x += Math.cos(midAngle) * cfg.pullOutDistance;
                 y += Math.sin(midAngle) * cfg.pullOutDistance;
             }
@@ -109,38 +105,22 @@
                 _this.ctx.sector(x,y,radius,angle.start,angle.end,_this.data[index].color);
             }
             cfg.showSegmentBorder && _this.ctx.stroke(cfg.segmentBorderColor,cfg.segmentBorderWidth);
-            //if(percent>=1){
-                drawText(x,y,radius,angle.start,angle.end,range);
-            //}
+            cfg.showText && drawText(x,y,radius,angle.start,angle.end,r);
         }
 
         function drawText(x,y,r,start,end,data){
             //计算文本位置
-            var text,middAngle = (start+end)/ 2, dis = r/ 2,
+            var middAngle = (start+end)/ 2, dis = r/ 2,
                 percent = data[4],d = data[2];
             if(_this.config.isDount){
                 dis = r/2 + r*_this.config.dountRadiusPercent/2;
             }
             percent = (percent * 100).toFixed(1)+'%';
-            var xaxis = Math.cos(middAngle) * dis + x;
-            var yaxis = Math.sin(middAngle) * dis + y;
-            _this.ctx.set({
-                textBaseline : 'middle',
-                textAlign : 'center',
-                font : _this.config.labelFontStyle + " " + _this.config.labelFontSize+"px " + _this.config.labelFontFamily,
-                fillStyle : _this.config.dountTextColor
-            });
-            text = _this.trigger('renderText',[percent,d,data[3]]);
-            text = text?text:percent;
-            _this.ctx.fillText(text,xaxis,yaxis);
+            var xaxis = Math.cos(middAngle) * dis + x, yaxis = Math.sin(middAngle) * dis + y;
+            _this.drawText(percent,xaxis,yaxis,[d,data[3]]);
         }
         function drawDountText(){
-            _this.ctx.fillText(_this.config.dountText,origin.x,origin.y,{
-                textBaseline : _this.config.dountTextBaseline,
-                textAlign : _this.config.dountTextAlign,
-                font : _this.config.dountTextFont,
-                fillStyle : _this.config.dountTextColor
-            });
+            _this.ctx.fillText(_this.config.dountText,origin.x,origin.y,_this.config.dountFont);
         }
         /**
          * 绑定canvas dom元素上的事件 如：click、touch
@@ -182,10 +162,9 @@
                 isInPie = (dfc >= radius*_this.config.dountRadiusPercent);
             }
             if(!isInPie)return;
-
             var clickAngle = Math.atan2(y, x)-startAngle;
-            if ( clickAngle < 0 ) clickAngle = 2 * Math.PI + clickAngle;
-            if(clickAngle > 2 * Math.PI) clickAngle = clickAngle - 2 * Math.PI;
+            if ( clickAngle < 0 ) clickAngle += 2 * Math.PI;
+            if(clickAngle > 2 * Math.PI) clickAngle -= 2 * Math.PI;
 
             _.each(angleRanges,function(a){
                 if(clickAngle >= a[0] && clickAngle < a[1]){
@@ -201,7 +180,7 @@
          * @param i 扇形索引
          */
         this.toggleSegment = function(i){
-            if(i == currentPullOutIndex){
+            if(i == currentOutIndex){
                 this.pushIn();
             }else{
                 this.pullOut(i);
@@ -211,7 +190,7 @@
          * 收起所有弹出的扇形块
          */
         this.pushIn = function(){
-            currentPullOutIndex = -1;
+            currentOutIndex = -1;
             drawPie(1);
             this.trigger('pushIn');
         }
@@ -220,8 +199,8 @@
          * @param i 扇形索引
          */
         this.pullOut = function(i){
-            if ( currentPullOutIndex == i ) return;
-            currentPullOutIndex = i;
+            if ( currentOutIndex == i ) return;
+            currentOutIndex = i;
             drawPie(1);
             this.trigger('pullOut',[_this.data[i],i]);
         }
@@ -248,9 +227,10 @@
          * 画图
          */
         this.draw = function(noAnim){
+            this.mergeFont(['textFont','dountFont']);
             calcOrigin();
             segmentTotal = 0;
-            currentPullOutIndex = -1;
+            currentOutIndex = -1;
             _.each(_this.data,function(d){
                 segmentTotal += d.value;
             });

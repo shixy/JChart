@@ -5,7 +5,7 @@
         var _this = this;
         this.data = this.chartData = data;
         //配置项
-        _.mergeObj(this.config, {
+        _.extend(this.config, {
             drawScaleFirst : false,
             //是否显示刻度文本背景
             scaleShowLabelBackdrop:true,
@@ -36,7 +36,7 @@
             //是否填充为面积图
             fill:true,
             showScaleLabel:true,
-            showLabel : false,
+            showText : false,
             gridLineColor:'rgb(0,0,0,.5)'
         });
 
@@ -48,6 +48,7 @@
         }
 
         this.draw = function (noAnim) {
+            this.mergeFont(['scaleFont','textFont']);
             this.initScale();
             if (noAnim) {
                 this.drawAllDataPoints(1);
@@ -67,22 +68,22 @@
         this.calcDrawingSizes = function () {
             var maxSize = (Math.min(this.width, this.height) / 2),
                 cfg = this.config,
-                labelHeight = cfg.scaleFontSize * 2;
+                labelHeight = cfg.scaleFont.size * 2;
             var labelLength = 0;
             _.each(_this.data.labels, function (label) {
-                this.ctx.set('font',cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily);
+                this.ctx.set(cfg.textFont);
                 var w = this.ctx.measureText(label).width;
                 if (w > labelLength) labelLength = w;
             }, this);
-            maxSize -= Math.max(labelLength, ((cfg.labelFontSize / 2) * 1.5));
-            maxSize -= cfg.labelFontSize;
+            maxSize -= Math.max(labelLength, ((cfg.textFont.size/2) * 1.5));
+            maxSize -= cfg.textFont.size;
             maxSize = _.capValue(maxSize, null, 0);
             this.scaleData.yHeight = maxSize;
             this.scaleData.yLabelHeight = labelHeight;
         }
 
         this.drawScale = function () {
-            var ctx = this.ctx, cfg = this.config, scale = this.scaleData,
+            var ctx = this.ctx, cfg = this.config, scale = this.scaleData,scaleSize = cfg.scaleFont.size,textSize = cfg.textFont.size,
                 dataLen = this.data.labels.length,px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
             //计算每条数据的角度
             var rotationDegree = (2 * Math.PI) / dataLen;
@@ -119,31 +120,23 @@
                         var textWidth = this.ctx.measureText(label).width;
                         this.ctx.rect(
                             Math.round(-textWidth/2 - px),     //X
-                            Math.round(-hop - cfg.scaleFontSize*0.5 - py),//Y
+                            Math.round(-hop - scaleSize/2 - py),//Y
                             Math.round(textWidth + px*2), //Width
-                            Math.round(cfg.scaleFontSize + py*2), //Height
+                            Math.round(scaleSize + py*2), //Height
                             cfg.scaleBackdropColor
                         );
                     }
-                    this.ctx.fillText(label,0,-hop,{
-                        fillStyle : cfg.scaleFontColor,
-                        textAlign : 'center',
-                        textBaseline : 'middle',
-                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily
-                    });
+                    this.ctx.fillText(label,0,-hop,cfg.scaleFont);
                 }
 
             }
 
             //设置文本样式
-            this.ctx.set({
-                fillStyle : cfg.labelFontColor,
-                font : cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily
-            });
-            //显示数据文本
+            this.ctx.set(cfg.textFont);
+            //显示数据标签文本
             for (var k = 0; k < dataLen; k++) {
-                var opposite = Math.sin(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
-                var adjacent = Math.cos(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
+                var opposite = Math.sin(rotationDegree * k) * (scale.yHeight + textSize);
+                var adjacent = Math.cos(rotationDegree * k) * (scale.yHeight + textSize);
                 var align;
                 if (rotationDegree * k == Math.PI || rotationDegree * k == 0) {
                     align = 'center';
@@ -152,7 +145,7 @@
                 }else {
                     align = 'left';
                 }
-                ctx.fillText(this.data.labels[k], opposite, -adjacent,{textAlign:align});
+                this.ctx.fillText(this.data.labels[k], opposite, -adjacent,{textAlign:align});
             }
             ctx.restore();
         }
@@ -179,7 +172,7 @@
                 _.each(set.data,function(d,j){
                     var y = getY(d);
                     if (cfg.showPoint) {
-                        ctx.rotate(rotationDegree).circle(0, y, cfg.pointRadius,set.pointColor,set.pointStrokeColor,cfg.pointBorderWidth);
+                        ctx.rotate(rotationDegree).circle(0, y, cfg.pointRadius,set.pointColor,set.pointBorderColor,cfg.pointBorderWidth);
                     }
                     if(animPc >= 1){
                         var p = getPosition(y,j);
@@ -190,7 +183,7 @@
 
             }, this);
             ctx.restore();
-            if(cfg.showLabel){
+            if(cfg.showText){
                 drawText();
             }
             function getY(d){
@@ -212,7 +205,7 @@
                 if(y > _this.height/2){
                     y += 6;
                 }
-                _this.drawText(p[0],y,_this.data.datasets[p[3]].data[p[2]],p[2],p[3]);
+                _this.drawText(_this.data.datasets[p[3]].data[p[2]],p[0],y,[p[2],p[3]]);
             });
 
         }

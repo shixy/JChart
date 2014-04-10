@@ -11,7 +11,7 @@
     <script type="text/javascript" src="../src/JChart.Line.js"></script>
 </head>
 <body>
-<canvas id="canvas1" height="400" width="800"></canvas>
+<canvas id="canvas1" height="300" width="500"></canvas>
 <script type="text/javascript">
     var data = {
         labels : ["2012","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2013',"二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2014','一月','二月'],
@@ -39,8 +39,7 @@
 //            stepValue : 10,
 //            start : 0
 //        },
-        //datasetGesture : true,
-        datasetStroke   : false
+        datasetGesture : false
     });
     line.on('tap.point',function(data,i,j){
         alert(JSON.stringify(data));

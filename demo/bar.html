@@ -29,7 +29,9 @@
         ]
     }
     var bar = new JChart.Bar(data,{
-        id : 'canvas1'
+        id : 'canvas1',
+        datasetGesture : true,
+        datasetShowNumber : 6
     });
     bar.on('tap.bar',function(data,i,j){
         alert(JSON.stringify(data));

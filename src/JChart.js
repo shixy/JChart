@@ -175,10 +175,26 @@ window.JingleChart = JChart = {
             return 0;
         }
     },
-    mergeObj : function(dest,source){
-        for(var p in source){
-            dest[p] = source[p];
+    extend : function(target){
+        var args = Array.prototype.slice.call(arguments,1);
+        this.each(args,function(v,i){
+            extend(target,v);
+        });
+        function extend(target,source){
+            for(var key in source){
+                var o = source[key];
+                if(o instanceof Array){
+                    target[key] = extend([], o);
+                }else if(o instanceof Object){
+                    target[key] = extend({},o);
+                }else{
+                    target[key] = o;
+                }
+            }
+            return target;
         }
+        return target;
+
     },
     clone : function(obj){
         var o;

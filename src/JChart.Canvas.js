@@ -2,7 +2,7 @@
  * 简单的Canvas帮助类，使canvas支持类似于jquery的链式操作，支持CanvasRenderingContext2D所有的方法，并提供一些常用的工具方法
  */
 ;(function(_){
-    function Helper(el){
+    function Chain(el){
         //需要返回结果的方法，这些方法将不能进行后续的链式调用
         var needReturnValueFn = ['isPointInPath','measureText','getImageData'];
         function Canvas(){
@@ -40,10 +40,10 @@
             set : function(name,value){
                 if(typeof name == 'object'){
                     for(var p in name){
-                        this.ctx[p] = name[p];
+                        this.ctx[p] && (this.ctx[p] = name[p]);
                     }
                 }else{
-                    this.ctx[name] = value;
+                    this.ctx[name] && (this.ctx[name] = value);
                 }
                 return this;
             },
@@ -260,5 +260,5 @@
         return new Canvas();
     }
 
-    _.Canvas = Helper;
-})(JChart);
+    _.Canvas = Chain;
+})(JChart || window);

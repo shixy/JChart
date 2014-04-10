@@ -6,7 +6,7 @@
         this.data = data;
         this.chartData = null;
         var _this = this;
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             //平滑曲线
             smooth : true,
             //是否显示线的连接点
@@ -40,6 +40,7 @@
          * 初始化部分元素值
          */
         this.draw = function(noAnim){
+            this.mergeFont(['textFont','scaleFont']);
             if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetShowNumber){
                 this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetShowNumber);
             }else{
@@ -62,13 +63,13 @@
         }
         this.drawLines = function(animPc){
             if(animPc >= 1)pointRanges = [];
-            var ctx = _this.ctx,config = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
+            var ctx = _this.ctx,cfg = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
             _.each(dataset,function(set,i){
                 //画连接线
                 ctx.beginPath().moveTo(scale.x, yPos(i,0));
                 _.each(set.data,function(d,j){
                     var pointX = xPos(j),pointY = yPos(i,j);
-                    if (config.smooth){//贝塞尔曲线
+                    if (cfg.smooth){//贝塞尔曲线
                         ctx.bezierCurveTo(xPos(j-0.5),yPos(i,j-1),xPos(j-0.5),pointY,pointX,pointY);
                     }else{
                         ctx.lineTo(pointX,pointY);
@@ -77,17 +78,17 @@
                         pointRanges.push([pointX,pointY,j,i]);
                     }
                 });
-                ctx.stroke(set.color,config.lineWidth);
+                ctx.stroke(set.color,cfg.lineWidth);
 
                 //填充区域
-                config.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
+                cfg.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
                     .fill(set.fillColor?set.fillColor : _.hex2Rgb(set.color,0.6)) : ctx.closePath();
 
                 //画点以及点上文本
                 _.each(set.data,function(d,k){
                     var x = xPos(k),y = yPos(i,k);
-                    config.showPoint && _this.drawPoint(x,y,set);
-                    config.showLabel && _this.drawText(x,y,d);
+                    cfg.showPoint && _this.drawPoint(x,y,set);
+                    cfg.showText && _this.drawText(d,x,y-3,[k,i]);
                 });
             });
 

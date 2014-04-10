@@ -7,7 +7,7 @@
         this.data = data;//所有的数据
         this.chartData = null;//图表当前展示的数据
         //配置项
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             //是否显示bar的边框
             showBarBorder : true,
             //bar边框宽度
@@ -41,6 +41,7 @@
             }else{
                 this.chartData = this.data;
             }
+            this.mergeFont(['scaleFont','textFont']);
             this.initScale(true);
             if(noAnim){
                 this.drawScale();
@@ -59,14 +60,14 @@
 
         this.drawBars = function(animPc){
             if(animPc >= 1)barRanges = [];
-            var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
+            var ctx = _this.ctx,cfg = _this.config,scale = _this.scaleData;
             _.each(_this.chartData.datasets,function(set,i){
-                if(!config.showBarBorder)borderColor = null;
+                if(!cfg.showBarBorder)borderColor = null;
                 _.each(set.data,function(d,j){
-                    var x = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,
-                        y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2),
+                    var x = scale.x + cfg.barSetSpacing + scale.xHop*j + scale.barWidth*i + cfg.barSpacing*i + cfg.barBorderWidth* i,
+                        y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(cfg.barBorderWidth/2),
                         color = set.color,borderColor;
-                    if(config.showBarBorder){
+                    if(cfg.showBarBorder){
                         borderColor = set.borderColor
                         //如果在数据源中没有配置borderColor，依据color自动生成一组背景色与边框色
                         if(!borderColor){
@@ -74,11 +75,11 @@
                             color = _.hex2Rgb(color,0.6);
                         }
                     }
-                    ctx.rect(x,y,width,-height,color,borderColor,config.barBorderWidth);
+                    ctx.rect(x,y,width,-height,color,borderColor,cfg.barBorderWidth);
                     if(animPc >= 1){
                         barRanges.push([x,x+width,y,y-height,j,i]);
                     }
-                    config.showLabel && _this.drawText(x+width/2,y-height,d);
+                    cfg.showText && _this.drawText(d,x+width/2,y-height-3,[j,i]);
 
                 });
             })

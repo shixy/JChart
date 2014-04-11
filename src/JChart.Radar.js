@@ -165,8 +165,9 @@
                     ctx.rotate(rotationDegree).lineTo(0, getY(d));
                 });
                 ctx.closePath();
-                cfg.fill && ctx.fill(set.fillColor);
-                ctx.stroke(set.strokeColor,cfg.lineWidth);
+
+                cfg.fill && ctx.fill(set.fillColor||_.hex2Rgb(set.color,0.6));
+                ctx.stroke(set.color,cfg.lineWidth);
 
                 //画连接点
                 _.each(set.data,function(d,j){

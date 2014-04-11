@@ -66,16 +66,12 @@
                 _.each(set.data,function(d,j){
                     var x = scale.x + cfg.barSetSpacing + scale.xHop*j + scale.barWidth*i + cfg.barSpacing*i + cfg.barBorderWidth* i,
                         y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(cfg.barBorderWidth/2),
-                        color = set.color,borderColor;
+                        color = set.color,borderColor,bgColor = _.hex2Rgb(color,0.6);
                     if(cfg.showBarBorder){
-                        borderColor = set.borderColor
-                        //如果在数据源中没有配置borderColor，依据color自动生成一组背景色与边框色
-                        if(!borderColor){
-                            borderColor = color;
-                            color = _.hex2Rgb(color,0.6);
-                        }
+                        //边框颜色默认与设置颜色一致
+                        borderColor = set.borderColor || color;
                     }
-                    ctx.rect(x,y,width,-height,color,borderColor,cfg.barBorderWidth);
+                    ctx.rect(x,y,width,-height,bgColor,borderColor,cfg.barBorderWidth);
                     if(animPc >= 1){
                         barRanges.push([x,x+width,y,y-height,j,i]);
                     }

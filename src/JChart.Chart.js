@@ -1,6 +1,7 @@
 ;(function(_){
     var Chart = function(){
         this.config = {
+            bgColor : '#fff',
             //优先画刻度
             drawScaleFirst : true,
             //文本字体属性
@@ -19,7 +20,7 @@
             style : 'normal',
             color : '#5b5b5b',
             textAlign : 'center',
-            textBaseLine : 'Middle'
+            textBaseline : 'middle'
         }
         this.events = {};
         /**
@@ -47,9 +48,18 @@
             }
             this.bindTouchEvents();
             this.bindEvents();
+            this.setBg();
         };
+        this.setBg = function(){
+            this.ctx.set('fillStyle',this.config.bgColor);
+            this.ctx.fillRect(0,0,this.width,this.height);
+        }
+        /**
+         * 清空画布后重新设置画布的背景
+         */
         this.clear = function(){
             this.ctx.clear();
+            this.setBg();
         };
         /**
          * 更新

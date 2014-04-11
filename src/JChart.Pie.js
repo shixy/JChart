@@ -4,15 +4,15 @@
         var angleRanges;//记录每个扇形的起始角度（从0开始）
         var _this = this;
         this.data = data;
-        var radius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentOutIndex = -1,origin = {};
+        var radius,totalData = 0,startAngle = 0,rotateAngle = 0,currentOutIndex = -1,origin = {};
         //覆盖配置项
         _.extend(this.config,{
             //border
-            showSegmentBorder : true,
+            showBorder : true,
             //border color
-            segmentBorderColor : "#fff",
+            borderColor : "#fff",
             //border width
-            segmentBorderWidth : 2,
+            borderWidth : 2,
             //开始角度,默认为12点钟方向
             startAngle : -Math.PI/2,
             //旋转扇形，使其中线对应的角度
@@ -41,7 +41,7 @@
             angleRanges = [];
             _.each(_this.data,function(d,i){
                 var start = angle;
-                var percent = d.value/segmentTotal;
+                var percent = d.value/totalData;
                 angle = angle + percent * _this.config.totalAngle;
                 var end = angle;
                 angleRanges.push([start,end,d,i,percent]);
@@ -68,7 +68,7 @@
         /**
          * 计算扇形真实的角度
          */
-        function calcSegmentAngle(r,p,t){
+        function calcSectorAngle(r,p,t){
             var start = r[0],end = r[1];
             if(t == 'rotate'){
                 //旋转
@@ -92,7 +92,7 @@
          */
         function drawSector(r,p,t){
             var x = origin.x,y = origin.y,cfg = _this.config,
-                index = r[3],angle = calcSegmentAngle(r,p,t);
+                index = r[3],angle = calcSectorAngle(r,p,t);
 
             if(index == currentOutIndex){
                 var midAngle = (r[0] + r[1])/2+startAngle;
@@ -104,7 +104,7 @@
             }else{
                 _this.ctx.sector(x,y,radius,angle.start,angle.end,_this.data[index].color);
             }
-            cfg.showSegmentBorder && _this.ctx.stroke(cfg.segmentBorderColor,cfg.segmentBorderWidth);
+            cfg.showBorder && _this.ctx.stroke(cfg.borderColor,cfg.borderWidth);
             cfg.showText && drawText(x,y,radius,angle.start,angle.end,r);
         }
 
@@ -229,10 +229,10 @@
         this.draw = function(noAnim){
             this.mergeFont(['textFont','dountFont']);
             calcOrigin();
-            segmentTotal = 0;
+            totalData = 0;
             currentOutIndex = -1;
             _.each(_this.data,function(d){
-                segmentTotal += d.value;
+                totalData += d.value;
             });
             calcAngel();
             if(noAnim){

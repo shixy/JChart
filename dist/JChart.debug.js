@@ -175,10 +175,26 @@ window.JingleChart = JChart = {
             return 0;
         }
     },
-    mergeObj : function(dest,source){
-        for(var p in source){
-            dest[p] = source[p];
+    extend : function(target){
+        var args = Array.prototype.slice.call(arguments,1);
+        this.each(args,function(v,i){
+            extend(target,v);
+        });
+        function extend(target,source){
+            for(var key in source){
+                var o = source[key];
+                if(o instanceof Array){
+                    target[key] = extend([], o);
+                }else if(o instanceof Object){
+                    target[key] = extend({},o);
+                }else{
+                    target[key] = o;
+                }
+            }
+            return target;
         }
+        return target;
+
     },
     clone : function(obj){
         var o;
@@ -253,7 +269,7 @@ window.JingleChart = JChart = {
         else{
             return color;
         }
-        return 'rgb('+r+','+g+','+b+alpha?alpha:'1'+')';
+        return 'rgba('+r+','+g+','+ b + ','+(alpha?alpha:1)+')';
     },
     tmpl : (function(){
         //Javascript micro templating by John Resig - source at http://ejohn.org/blog/javascript-micro-templating/
@@ -301,7 +317,7 @@ window.JingleChart = JChart = {
         this.data = data;//所有的数据
         this.chartData = null;//图表当前展示的数据
         //配置项
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             //是否显示bar的边框
             showBarBorder : true,
             //bar边框宽度
@@ -329,12 +345,13 @@ window.JingleChart = JChart = {
         /**
          * 初始化部分元素值
          */
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
             if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetShowNumber){
                 this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetShowNumber);
             }else{
                 this.chartData = this.data;
             }
+            this.mergeFont(['scaleFont','textFont']);
             this.initScale(true);
             if(noAnim){
                 this.drawScale();
@@ -353,26 +370,22 @@ window.JingleChart = JChart = {
 
         this.drawBars = function(animPc){
             if(animPc >= 1)barRanges = [];
-            var ctx = _this.ctx,config = _this.config,scale = _this.scaleData;
+            var ctx = _this.ctx,cfg = _this.config,scale = _this.scaleData;
             _.each(_this.chartData.datasets,function(set,i){
-                if(!config.showBarBorder)borderColor = null;
+                if(!cfg.showBarBorder)borderColor = null;
                 _.each(set.data,function(d,j){
-                    var x = scale.x + config.barSetSpacing + scale.xHop*j + scale.barWidth*i + config.barSpacing*i + config.barBorderWidth* i,
-                        y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(config.barBorderWidth/2),
-                        color = set.color,borderColor;
-                    if(config.showBarBorder){
-                        borderColor = set.borderColor
-                        //如果在数据源中没有配置borderColor，依据color自动生成一组背景色与边框色
-                        if(!borderColor){
-                            borderColor = color;
-                            color = _.hex2Rgb(color,0.6);
-                        }
+                    var x = scale.x + cfg.barSetSpacing + scale.xHop*j + scale.barWidth*i + cfg.barSpacing*i + cfg.barBorderWidth* i,
+                        y = scale.y,width = scale.barWidth,height = animPc*_this.calcOffset(d,scale.yScaleValue,scale.yHop)+(cfg.barBorderWidth/2),
+                        color = set.color,borderColor,bgColor = _.hex2Rgb(color,0.6);
+                    if(cfg.showBarBorder){
+                        //边框颜色默认与设置颜色一致
+                        borderColor = set.borderColor || color;
                     }
-                    ctx.rect(x,y,width,-height,color,borderColor,config.barBorderWidth);
+                    ctx.rect(x,y,width,-height,bgColor,borderColor,cfg.barBorderWidth);
                     if(animPc >= 1){
                         barRanges.push([x,x+width,y,y-height,j,i]);
                     }
-                    config.showLabel && _this.drawText(x+width/2,y-height,d);
+                    cfg.showText && _this.drawText(d,x+width/2,y-height-3,[j,i]);
 
                 });
             })
@@ -404,7 +417,7 @@ window.JingleChart = JChart = {
  * 简单的Canvas帮助类，使canvas支持类似于jquery的链式操作，支持CanvasRenderingContext2D所有的方法，并提供一些常用的工具方法
  */
 ;(function(_){
-    function Helper(el){
+    function Chain(el){
         //需要返回结果的方法，这些方法将不能进行后续的链式调用
         var needReturnValueFn = ['isPointInPath','measureText','getImageData'];
         function Canvas(){
@@ -442,10 +455,10 @@ window.JingleChart = JChart = {
             set : function(name,value){
                 if(typeof name == 'object'){
                     for(var p in name){
-                        this.ctx[p] = name[p];
+                        this.ctx[p] && (this.ctx[p] = name[p]);
                     }
                 }else{
-                    this.ctx[name] = value;
+                    this.ctx[name] && (this.ctx[name] = value);
                 }
                 return this;
             },
@@ -482,13 +495,31 @@ window.JingleChart = JChart = {
                 this.ctx.stroke();
                 return this;
             },
+            /**
+             * 填充文本，在文本中加入\n可实现换行
+             * @param text
+             * @param x
+             * @param y
+             * @param style
+             * @return {*}
+             */
             fillText : function(text,x,y,style){
+                this.ctx.save();
                 if(style && typeof style == 'object'){
                     for(var p in style){
                         this.set(p,style[p]);
                     }
                 }
-                this.ctx.fillText(text,x,y);
+                var texts = (text+'').split('\n');
+                if(texts.length > 1){
+                    var fontsize = this.getFontSize();
+                    for(var i=0;i<texts.length;i++){
+                        this.ctx.fillText(texts[i],x,y+i*fontsize);
+                    }
+                }else{
+                    this.ctx.fillText(text,x,y);
+                }
+                this.ctx.restore();
                 return this;
             },
             /**
@@ -628,24 +659,47 @@ window.JingleChart = JChart = {
                     cb();
                 }
                 return this;
+            },
+            /**
+             * 获取canvas当前的字体大小
+             * @return {Boolean}
+             */
+            getFontSize : function(){
+                var size = this.ctx.font.match(/\d+(?=px)/i);
+                if(size){
+                    size = parseInt(size[0]);
+                }
+                return size;
             }
         }
         return new Canvas();
     }
 
-    _.Canvas = Helper;
-})(JChart);
+    _.Canvas = Chain;
+})(JChart || window);
 ;(function(_){
     var Chart = function(){
         this.config = {
+            bgColor : '#fff',
             //优先画刻度
             drawScaleFirst : true,
+            //文本字体属性
+            showText : true,
+            textFont : {},
             //是否开启动画
             animation : true,
             //动画帧数
             animationSteps : 60,
             //动画函数
             animationEasing : "easeOutBounce"
+        }
+        this.defaultFont = {
+            family : 'Arial',
+            size : 16,
+            style : 'normal',
+            color : '#5b5b5b',
+            textAlign : 'center',
+            textBaseline : 'middle'
         }
         this.events = {};
         /**
@@ -656,7 +710,7 @@ window.JingleChart = JChart = {
             if(typeof cfg == 'string'){
                 this.config.id = cfg;
             }else{
-                _.mergeObj(this.config,cfg);
+                _.extend(this.config,cfg);
             }
             this.ctx = _.Canvas(this.config.id);
             var canvas = this.ctx.el;
@@ -671,21 +725,29 @@ window.JingleChart = JChart = {
                 canvas.width = this.width * window.devicePixelRatio;
                 this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
             }
-            this.init();
             this.bindTouchEvents();
             this.bindEvents();
+            this.setBg();
         };
+        this.setBg = function(){
+            this.ctx.set('fillStyle',this.config.bgColor);
+            this.ctx.fillRect(0,0,this.width,this.height);
+        }
+        /**
+         * 清空画布后重新设置画布的背景
+         */
         this.clear = function(){
             this.ctx.clear();
+            this.setBg();
         };
         /**
          * 更新
          */
         this.refresh = function(config){
             if(config){
-               _.mergeObj(this.config,config);
+               _.extend(this.config,config);
             }
-            this.init();
+            this.draw();
         };
         /**
          * 加载数据
@@ -694,9 +756,22 @@ window.JingleChart = JChart = {
          */
         this.load = function(data,config){
             this.data = data;
-            config && _.mergeObj(this.config,config);
+            config && _.extend(this.config,config);
             this.clear();
-            this.init(true);
+            this.draw(true);
+        }
+        this.mergeFont = function(key){
+            if(key instanceof Array){
+                _.each(key,function(v){
+                    this.mergeFont(v);
+                },this);
+            }else{
+                var of = this.config[key];
+                var f = _.extend({},this.defaultFont,of);
+                f.font = f.style + " " + f.size+"px " + f.family;
+                f.fillStyle = f.color;
+                this.config[key] = f;
+            }
         }
         /**
          * 动画函数
@@ -758,6 +833,14 @@ window.JingleChart = JChart = {
             }else{
                 return null;
             }
+        };
+        this.drawText = function(text,x,y,args,style){
+            this.ctx.set(this.config.textFont);
+            style && this.ctx.set(style);
+            args = args ? [text].concat(args) : [text];
+            var t = this.trigger('renderText',args);
+            t = t?t:text;
+            this.ctx.fillText(t,x,y);
         };
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
@@ -849,7 +932,7 @@ window.JingleChart = JChart = {
         this.data = data;
         this.chartData = null;
         var _this = this;
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             //平滑曲线
             smooth : true,
             //是否显示线的连接点
@@ -882,7 +965,8 @@ window.JingleChart = JChart = {
         /**
          * 初始化部分元素值
          */
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
+            this.mergeFont(['textFont','scaleFont']);
             if(this.config.datasetGesture && this.data.labels.length > _this.config.datasetShowNumber){
                 this.chartData = this.sliceData(this.data,0,this.data.labels.length,this.config.datasetShowNumber);
             }else{
@@ -905,13 +989,13 @@ window.JingleChart = JChart = {
         }
         this.drawLines = function(animPc){
             if(animPc >= 1)pointRanges = [];
-            var ctx = _this.ctx,config = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
+            var ctx = _this.ctx,cfg = _this.config,dataset = _this.chartData.datasets,scale = _this.scaleData;
             _.each(dataset,function(set,i){
                 //画连接线
                 ctx.beginPath().moveTo(scale.x, yPos(i,0));
                 _.each(set.data,function(d,j){
                     var pointX = xPos(j),pointY = yPos(i,j);
-                    if (config.smooth){//贝塞尔曲线
+                    if (cfg.smooth){//贝塞尔曲线
                         ctx.bezierCurveTo(xPos(j-0.5),yPos(i,j-1),xPos(j-0.5),pointY,pointX,pointY);
                     }else{
                         ctx.lineTo(pointX,pointY);
@@ -920,17 +1004,16 @@ window.JingleChart = JChart = {
                         pointRanges.push([pointX,pointY,j,i]);
                     }
                 });
-                ctx.stroke(set.color,config.lineWidth);
-
+                ctx.stroke(set.color,cfg.lineWidth);
                 //填充区域
-                config.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
+                cfg.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
                     .fill(set.fillColor?set.fillColor : _.hex2Rgb(set.color,0.6)) : ctx.closePath();
 
                 //画点以及点上文本
                 _.each(set.data,function(d,k){
                     var x = xPos(k),y = yPos(i,k);
-                    config.showPoint && _this.drawPoint(x,y,set);
-                    config.showLabel && _this.drawText(x,y,d);
+                    cfg.showPoint && _this.drawPoint(x,y,set);
+                    cfg.showText && _this.drawText(d,x,y-3,[k,i]);
                 });
             });
 
@@ -970,14 +1053,15 @@ window.JingleChart = JChart = {
         var angleRanges;//记录每个扇形的起始角度（从0开始）
         var _this = this;
         this.data = data;
-        var pieRadius,segmentTotal = 0,startAngle = 0,rotateAngle = 0,currentPullOutIndex = -1;
-        _.mergeObj(this.config,{
+        var radius,totalData = 0,startAngle = 0,rotateAngle = 0,currentOutIndex = -1,origin = {};
+        //覆盖配置项
+        _.extend(this.config,{
             //border
-            showSegmentBorder : true,
+            showBorder : true,
             //border color
-            segmentBorderColor : "#fff",
+            borderColor : "#fff",
             //border width
-            segmentBorderWidth : 2,
+            borderWidth : 2,
             //开始角度,默认为12点钟方向
             startAngle : -Math.PI/2,
             //旋转扇形，使其中线对应的角度
@@ -989,12 +1073,14 @@ window.JingleChart = JChart = {
             //环形图
             isDount : false,
             dountRadiusPercent :0.4,
+            totalAngle : Math.PI*2,
             dountText : '',
-            dountTextFont : 'bold 30px Arial',
-            dountTextColor : '#e74c3c',
-            dountTextBaseline : 'middle',
-            dountTextAlign : 'center'
-        })
+            dountFont : {
+                size : 20,
+                style : 600,
+                color : '#3498DB'
+            }
+        });
         /**
          * 计算各个扇形的起始角度
          * @param data
@@ -1004,9 +1090,10 @@ window.JingleChart = JChart = {
             angleRanges = [];
             _.each(_this.data,function(d,i){
                 var start = angle;
-                angle = angle + (d.value/segmentTotal) * (Math.PI*2);
+                var percent = d.value/totalData;
+                angle = angle + percent * _this.config.totalAngle;
                 var end = angle;
-                angleRanges.push([start,end,d,i]);
+                angleRanges.push([start,end,d,i,percent]);
             })
         }
 
@@ -1020,32 +1107,26 @@ window.JingleChart = JChart = {
          */
         function drawPie (percent,type){
             _this.clear();
-            var animPercent = 1;
-            if (_this.config.animation) {
-                animPercent = percent;
-            }
+            percent = _this.config.animation ? percent : 1;
             _.each(angleRanges,function(a){
-                drawSegment(a,animPercent,type);
+                drawSector(a,percent,type);
             });
-            if(_this.config.isDount && _this.config.dountText){
-                drawDountText();
-            }
+            _this.config.isDount && _this.config.dountText && drawDountText();
         }
 
         /**
-         * 计算扇形真实的其实角度
+         * 计算扇形真实的角度
          */
-        function calcSegmentAngle(range,percent,type){
-            var start = range[0],
-                end = range[1];
-            if(type == 'rotate'){
+        function calcSectorAngle(r,p,t){
+            var start = r[0],end = r[1];
+            if(t == 'rotate'){
                 //旋转
-                start = start + startAngle + rotateAngle*percent;
-                end = end + startAngle + rotateAngle*percent;
+                start = start + startAngle + rotateAngle*p;
+                end = end + startAngle + rotateAngle*p;
             }else{
                 //默认动画
-                start = start*percent + startAngle;
-                end = end*percent + startAngle
+                start = start*p + startAngle;
+                end = end*p + startAngle
             }
             return {
                 start : start,
@@ -1058,57 +1139,37 @@ window.JingleChart = JChart = {
          * @param i
          * @param animPercent
          */
-        function drawSegment(range,percent,type){
-            var x = _this.width/2,
-                y = _this.height/ 2,
-                index = range[3];
-            if(index == currentPullOutIndex){
-                var midAngle = (range[0] + range[1])/2+startAngle;
-                x += Math.cos(midAngle) * _this.config.pullOutDistance;
-                y += Math.sin(midAngle) * _this.config.pullOutDistance;
+        function drawSector(r,p,t){
+            var x = origin.x,y = origin.y,cfg = _this.config,
+                index = r[3],angle = calcSectorAngle(r,p,t);
+
+            if(index == currentOutIndex){
+                var midAngle = (r[0] + r[1])/2+startAngle;
+                x += Math.cos(midAngle) * cfg.pullOutDistance;
+                y += Math.sin(midAngle) * cfg.pullOutDistance;
             }
-            var angle = calcSegmentAngle(range,percent,type);
-            drawSector(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
-            if(percent>=1){
-                drawText(x,y,pieRadius,angle.start,angle.end,_this.data[index]);
+            if(cfg.isDount){
+                _this.ctx.dountSector(x,y,radius*cfg.dountRadiusPercent,radius,angle.start,angle.end,_this.data[index].color);
+            }else{
+                _this.ctx.sector(x,y,radius,angle.start,angle.end,_this.data[index].color);
             }
+            cfg.showBorder && _this.ctx.stroke(cfg.borderColor,cfg.borderWidth);
+            cfg.showText && drawText(x,y,radius,angle.start,angle.end,r);
         }
 
-        function drawSector(x,y,r,start,end,data){
-            var color = data.color,borderColor,borderWidth;
-            if(_this.config.showSegmentBorder){
-                borderColor = _this.config.segmentBorderColor;
-                borderWidth = _this.config.segmentBorderWidth;
-            }
-            if(_this.config.isDount){
-                _this.ctx.dountSector(x,y,r*_this.config.dountRadiusPercent,r,start,end,color,borderColor,borderWidth);
-            }else{
-                _this.ctx.sector(x,y,r,start,end,color,borderColor,borderWidth);
-            }
-        }
         function drawText(x,y,r,start,end,data){
             //计算文本位置
-            var middAngle = (start+end)/2;
-            var d = r/2;
+            var middAngle = (start+end)/ 2, dis = r/ 2,
+                percent = data[4],d = data[2];
             if(_this.config.isDount){
-                d = r/2 + r*_this.config.dountRadiusPercent/2;
+                dis = r/2 + r*_this.config.dountRadiusPercent/2;
             }
-            var xaxis = Math.cos(middAngle) * d + x;
-            var yaxis = Math.sin(middAngle) * d + y;
-            _this.ctx.fillText('30%',xaxis,yaxis,{
-                textBaseline : _this.config.dountTextBaseline,
-                textAlign : _this.config.dountTextAlign,
-                font : 'normal 20px Arial',
-                fillStyle : _this.config.dountTextColor
-            });
+            percent = (percent * 100).toFixed(1)+'%';
+            var xaxis = Math.cos(middAngle) * dis + x, yaxis = Math.sin(middAngle) * dis + y;
+            _this.drawText(percent,xaxis,yaxis,[d,data[3]]);
         }
         function drawDountText(){
-            _this.ctx.fillText(_this.config.dountText,_this.width/2,_this.height/2,{
-                textBaseline : _this.config.dountTextBaseline,
-                textAlign : _this.config.dountTextAlign,
-                font : _this.config.dountTextFont,
-                fillStyle : _this.config.dountTextColor
-            });
+            _this.ctx.fillText(_this.config.dountText,origin.x,origin.y,_this.config.dountFont);
         }
         /**
          * 绑定canvas dom元素上的事件 如：click、touch
@@ -1136,25 +1197,23 @@ window.JingleChart = JChart = {
                 }else{
                     _this.trigger(type,[angle[2],angle[3]]);
                 }
-
             }
         }
 
         function isInSegment(offsetX,offsetY){
             var angle;
-            var x = offsetX - _this.width/2;
-            var y = offsetY - _this.height/2;
+            var x = offsetX - origin.x;
+            var y = offsetY - origin.y;
             //距离圆点的距离
             var dfc = Math.sqrt( Math.pow( Math.abs(x), 2 ) + Math.pow( Math.abs(y), 2 ) );
-            var isInPie = (dfc <= pieRadius);
+            var isInPie = (dfc <= radius);
             if(isInPie && _this.config.isDount){//排除dount图中心区
-                isInPie = (dfc >= pieRadius*_this.config.dountRadiusPercent);
+                isInPie = (dfc >= radius*_this.config.dountRadiusPercent);
             }
             if(!isInPie)return;
-
             var clickAngle = Math.atan2(y, x)-startAngle;
-            if ( clickAngle < 0 ) clickAngle = 2 * Math.PI + clickAngle;
-            if(clickAngle > 2 * Math.PI) clickAngle = clickAngle - 2 * Math.PI;
+            if ( clickAngle < 0 ) clickAngle += 2 * Math.PI;
+            if(clickAngle > 2 * Math.PI) clickAngle -= 2 * Math.PI;
 
             _.each(angleRanges,function(a){
                 if(clickAngle >= a[0] && clickAngle < a[1]){
@@ -1170,7 +1229,7 @@ window.JingleChart = JChart = {
          * @param i 扇形索引
          */
         this.toggleSegment = function(i){
-            if(i == currentPullOutIndex){
+            if(i == currentOutIndex){
                 this.pushIn();
             }else{
                 this.pullOut(i);
@@ -1180,7 +1239,7 @@ window.JingleChart = JChart = {
          * 收起所有弹出的扇形块
          */
         this.pushIn = function(){
-            currentPullOutIndex = -1;
+            currentOutIndex = -1;
             drawPie(1);
             this.trigger('pushIn');
         }
@@ -1189,8 +1248,8 @@ window.JingleChart = JChart = {
          * @param i 扇形索引
          */
         this.pullOut = function(i){
-            if ( currentPullOutIndex == i ) return;
-            currentPullOutIndex = i;
+            if ( currentOutIndex == i ) return;
+            currentOutIndex = i;
             drawPie(1);
             this.trigger('pullOut',[_this.data[i],i]);
         }
@@ -1214,15 +1273,15 @@ window.JingleChart = JChart = {
             drawPie(1);
         }
         /**
-         * 初始化部分元素值
+         * 画图
          */
-        this.init = function(noAnim){
-            //计算半径(留10个像素)
-            pieRadius = Math.min(_this.height/2,_this.width/2) - 10;
-            segmentTotal = 0;
-            currentPullOutIndex = -1;
+        this.draw = function(noAnim){
+            this.mergeFont(['textFont','dountFont']);
+            calcOrigin();
+            totalData = 0;
+            currentOutIndex = -1;
             _.each(_this.data,function(d){
-                segmentTotal += d.value;
+                totalData += d.value;
             });
             calcAngel();
             if(noAnim){
@@ -1231,6 +1290,19 @@ window.JingleChart = JChart = {
                 this.doAnim(null,drawPie);
             }
             startAngle = _this.config.startAngle;
+        }
+        //计算原点位置及半径
+        function calcOrigin(){
+            if(_this.config.totalAngle == Math.PI){
+                origin = {
+                    x : _this.width/2,
+                    y : _this.height - 20
+                }
+                radius = Math.min(origin.x,origin.y) - 10;
+            }else{
+                origin = {x:_this.width/2,y:_this.height/2};
+                radius = Math.min(origin.x,origin.y) - 10;
+            }
         }
         //初始化参数
         if(cfg)this.initial(cfg);
@@ -1244,7 +1316,7 @@ window.JingleChart = JChart = {
         var _this = this;
         this.data = this.chartData = data;
   		//配置项
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             drawScaleFirst : false,
             //是否显示刻度文本背景
             showScaleLabelBackdrop : true,
@@ -1254,12 +1326,20 @@ window.JingleChart = JChart = {
             scaleBackdropPaddingY : 2,
             //刻度padding-left right
             scaleBackdropPaddingX : 2,
-            //是否显示扇形边框
-            showSegmentBorder : true,
-            //扇形边框颜色
-            segmentBorderColor : "#fff",
-            //扇形边框宽度
-            segmentBorderWidth : 2,
+            //是否显示角度分割线
+            showAngleLine : true,
+            //分割线颜色
+            angleLineColor : "rgba(0,0,0,.1)",
+            showBorder : true,
+            borderColr : '#fff',
+            borderWidth : 1,
+            textFont : {
+                size : 16,
+                color : '#666',
+                textBaseline : 'middle'
+            },
+            //分割线宽度
+            angleLineWidth : 1,
             //是否开启旋转动画
             animateRotate : true,
             //是否开启缩放动画
@@ -1272,7 +1352,8 @@ window.JingleChart = JChart = {
             this.on('_tap',tapHandler);
         }
         
-        this.init = function(noAnim){
+        this.draw = function(noAnim){
+            this.mergeFont(['scaleFont','textFont']);
         	this.initScale();
             if(noAnim){
                 this.drawAllSegments(1);
@@ -1288,69 +1369,75 @@ window.JingleChart = JChart = {
         }
         this.calcDrawingSizes = function(){
             var maxSize = Math.min(this.width,this.height)/2,
-                cfg = this.config,
-                labelHeight = cfg.scaleFontSize*2;
+                cfg = this.config,size = cfg.scaleFont.size,lh = size*2;
 
-            maxSize -= Math.max(cfg.scaleFontSize*0.5,cfg.scaleLineWidth*0.5);
+            maxSize -= Math.max(size*0.5,cfg.scaleLineWidth*0.5);
             if (cfg.showScaleLabelBackdrop){
-                labelHeight += (2 * cfg.scaleBackdropPaddingY);
+                lh += (2 * cfg.scaleBackdropPaddingY);
                 maxSize -= cfg.scaleBackdropPaddingY*1.5;
             }
-            this.scaleData.yHeight = maxSize;
-            this.scaleData.yLabelHeight = labelHeight;
+            this.scaleData.yHeight = maxSize - 10;
+            this.scaleData.yLabelHeight = lh;
         }
         
         this.drawScale = function(){
         	var cfg = this.config,scale = this.scaleData,x = this.width/2, y = this.height/2
-                px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
+                size = cfg.scaleFont.size,px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
+            this.ctx.save().translate(x,y);
+
+            //画圆圈
             for (var i=0; i<scale.yScaleValue.step; i++){
                 var hop = scale.yHop * (i + 1);
-                if (cfg.showGridLine){
-                    this.ctx.circle(x, y, hop,false,cfg.gridLineColor,cfg.gridLineWidth)
-                }
+                cfg.showGridLine && this.ctx.circle(0, 0, hop,false,cfg.gridLineColor,cfg.gridLineWidth);
                 if (cfg.showScaleLabel){
                     var label =  scale.yScaleValue.labels[i];
                     if (cfg.showScaleLabelBackdrop){
                         var textWidth = this.ctx.measureText(label).width;
                         this.ctx.rect(
-                            Math.round(x - textWidth/2 - px),     //X
-                            Math.round(y - hop - cfg.scaleFontSize*0.5 - py),//Y
+                            Math.round(- textWidth/2 - px),     //X
+                            Math.round(- hop - size/2 - py),//Y
                             Math.round(textWidth + px*2), //Width
-                            Math.round(cfg.scaleFontSize + py*2), //Height
+                            Math.round(size + py*2), //Height
                             cfg.scaleBackdropColor
                         );
                     }
-                    this.ctx.fillText(label,x,y - hop,{
-                        textBaseline : 'middle',
-                        fillStyle : cfg.scaleFontColor,
-                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily,
-                        textAlign : 'center'
-                    });
+                    this.ctx.fillText(label,0,-hop,cfg.scaleFont);
                 }
             }
+            //画角度分割线
+            var len = this.data.labels.length,rotateAngle = (2*Math.PI)/len;
+            this.ctx.rotate(-Math.PI/2-rotateAngle);
+            _.each(this.data.labels,function(label,i){
+                this.ctx.rotate(rotateAngle);
+                if(cfg.showAngleLine){
+                this.ctx.line(0,0,scale.yHeight,0,cfg.angleLineColor,cfg.angleLineWidth);
+                }
+                if(cfg.showLabel){
+                    this.ctx.save().translate(scale.yHeight+10,0).rotate(Math.PI/2 - rotateAngle*i);
+                    this.ctx.fillText(label,0,0,cfg.textFont);
+                    this.ctx.restore();
+                }
+            },this);
+            this.ctx.restore();
         }
 
         this.drawAllSegments = function(animPc){
-            var startAngle = -Math.PI/2,angleStep = (Math.PI*2)/this.data.length,
-                scaleAnimation = 1,rotateAnimation = 1,
+            var startAngle = -Math.PI/2,angleStep = (Math.PI*2)/this.data.datasets.length,
+               scaleAnim = 1,rotateAnim = 1,
                 scale = this.scaleData,cfg = this.config,
                 borderColor,borderWidth;
             if (cfg.animation) {
-                if (cfg.animateScale) {
-                    scaleAnimation = animPc;
-                }
-                if (cfg.animateRotate){
-                    rotateAnimation = animPc;
-                }
+                cfg.animateScale && (scaleAnim = animPc);
+                cfg.animateRotate && (rotateAnim = animPc);
             }
-            if(cfg.showSegmentBorder){
-                borderColor = cfg.segmentBorderColor;
-                borderWidth = cfg.segmentBorderWidth;
+            if(cfg.showBorder){
+                borderColor = cfg.borderColor;
+                borderWidth = cfg.borderWidth;
             }
-            _.each(this.data,function(d){
-                var r = scaleAnimation * this.calcOffset(d.value,scale.yScaleValue,scale.yHop);
-                this.ctx.sector(this.width/2,this.height/2,r,startAngle, startAngle + rotateAnimation*angleStep,d.color,borderColor,borderWidth);
-                startAngle += rotateAnimation*angleStep;
+            _.each(this.data.datasets,function(d){
+                var r = scaleAnim * this.calcOffset(d.value,scale.yScaleValue,scale.yHop);
+                this.ctx.sector(this.width/2,this.height/2,r,startAngle, startAngle + rotateAnim*angleStep, _.hex2Rgb(d.color,.6),borderColor,borderWidth);
+                startAngle += rotateAnim*angleStep;
             },this);
         }
 
@@ -1400,7 +1487,7 @@ window.JingleChart = JChart = {
         var _this = this;
         this.data = this.chartData = data;
         //配置项
-        _.mergeObj(this.config, {
+        _.extend(this.config, {
             drawScaleFirst : false,
             //是否显示刻度文本背景
             scaleShowLabelBackdrop:true,
@@ -1418,11 +1505,6 @@ window.JingleChart = JChart = {
             angleLineColor:"rgba(0,0,0,.1)",
             //角度分割线宽度
             angleLineWidth:1,
-            //数据标签文本字体属性
-            labelFontFamily:"'Arial'",
-            labelFontStyle:"normal",
-            labelFontSize:12,
-            labelFontColor:"#666",
             //是否显示线的连接点
             showPoint:true,
             //连接圆点半径
@@ -1436,6 +1518,7 @@ window.JingleChart = JChart = {
             //是否填充为面积图
             fill:true,
             showScaleLabel:true,
+            showText : false,
             gridLineColor:'rgb(0,0,0,.5)'
         });
 
@@ -1446,7 +1529,8 @@ window.JingleChart = JChart = {
             this.on('_tap', tapHandler);
         }
 
-        this.init = function (noAnim) {
+        this.draw = function (noAnim) {
+            this.mergeFont(['scaleFont','textFont']);
             this.initScale();
             if (noAnim) {
                 this.drawAllDataPoints(1);
@@ -1466,22 +1550,22 @@ window.JingleChart = JChart = {
         this.calcDrawingSizes = function () {
             var maxSize = (Math.min(this.width, this.height) / 2),
                 cfg = this.config,
-                labelHeight = cfg.scaleFontSize * 2;
+                labelHeight = cfg.scaleFont.size * 2;
             var labelLength = 0;
             _.each(_this.data.labels, function (label) {
-                this.ctx.set('font',cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily);
+                this.ctx.set(cfg.textFont);
                 var w = this.ctx.measureText(label).width;
                 if (w > labelLength) labelLength = w;
             }, this);
-            maxSize -= Math.max(labelLength, ((cfg.labelFontSize / 2) * 1.5));
-            maxSize -= cfg.labelFontSize;
+            maxSize -= Math.max(labelLength, ((cfg.textFont.size/2) * 1.5));
+            maxSize -= cfg.textFont.size;
             maxSize = _.capValue(maxSize, null, 0);
             this.scaleData.yHeight = maxSize;
             this.scaleData.yLabelHeight = labelHeight;
         }
 
         this.drawScale = function () {
-            var ctx = this.ctx, cfg = this.config, scale = this.scaleData,
+            var ctx = this.ctx, cfg = this.config, scale = this.scaleData,scaleSize = cfg.scaleFont.size,textSize = cfg.textFont.size,
                 dataLen = this.data.labels.length,px = cfg.scaleBackdropPaddingX,py = cfg.scaleBackdropPaddingY;
             //计算每条数据的角度
             var rotationDegree = (2 * Math.PI) / dataLen;
@@ -1518,31 +1602,23 @@ window.JingleChart = JChart = {
                         var textWidth = this.ctx.measureText(label).width;
                         this.ctx.rect(
                             Math.round(-textWidth/2 - px),     //X
-                            Math.round(-hop - cfg.scaleFontSize*0.5 - py),//Y
+                            Math.round(-hop - scaleSize/2 - py),//Y
                             Math.round(textWidth + px*2), //Width
-                            Math.round(cfg.scaleFontSize + py*2), //Height
+                            Math.round(scaleSize + py*2), //Height
                             cfg.scaleBackdropColor
                         );
                     }
-                    this.ctx.fillText(label,0,-hop,{
-                        fillStyle : cfg.scaleFontColor,
-                        textAlign : 'center',
-                        textBaseline : 'middle',
-                        font : cfg.scaleFontStyle + " " + cfg.scaleFontSize + "px " + cfg.scaleFontFamily
-                    });
+                    this.ctx.fillText(label,0,-hop,cfg.scaleFont);
                 }
 
             }
 
             //设置文本样式
-            this.ctx.set({
-                fillStyle : cfg.labelFontColor,
-                font : cfg.labelFontStyle + " " + cfg.labelFontSize + "px " + cfg.labelFontFamily
-            });
-            //显示数据文本
+            this.ctx.set(cfg.textFont);
+            //显示数据标签文本
             for (var k = 0; k < dataLen; k++) {
-                var opposite = Math.sin(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
-                var adjacent = Math.cos(rotationDegree * k) * (scale.yHeight + cfg.labelFontSize);
+                var opposite = Math.sin(rotationDegree * k) * (scale.yHeight + textSize);
+                var adjacent = Math.cos(rotationDegree * k) * (scale.yHeight + textSize);
                 var align;
                 if (rotationDegree * k == Math.PI || rotationDegree * k == 0) {
                     align = 'center';
@@ -1551,7 +1627,7 @@ window.JingleChart = JChart = {
                 }else {
                     align = 'left';
                 }
-                ctx.fillText(this.data.labels[k], opposite, -adjacent,{textAlign:align});
+                this.ctx.fillText(this.data.labels[k], opposite, -adjacent,{textAlign:align});
             }
             ctx.restore();
         }
@@ -1571,25 +1647,28 @@ window.JingleChart = JChart = {
                     ctx.rotate(rotationDegree).lineTo(0, getY(d));
                 });
                 ctx.closePath();
-                cfg.fill && ctx.fill(set.fillColor);
-                ctx.stroke(set.strokeColor,cfg.lineWidth);
+
+                cfg.fill && ctx.fill(set.fillColor||_.hex2Rgb(set.color,0.6));
+                ctx.stroke(set.color,cfg.lineWidth);
 
                 //画连接点
-                if (cfg.showPoint) {
-                    _.each(set.data,function(d,j){
-                        var y = getY(d);
-                        ctx.rotate(rotationDegree)
-                            .circle(0, getY(d), cfg.pointRadius,set.pointColor,set.pointStrokeColor,cfg.pointBorderWidth);
-                        if(animPc >= 1){
-                            var p = getPosition(y,j);
-                            pointRanges.push([p[0],p[1],j,i]);
-                        }
-                    });
-                    ctx.rotate(rotationDegree);
-                }
+                _.each(set.data,function(d,j){
+                    var y = getY(d);
+                    if (cfg.showPoint) {
+                        ctx.rotate(rotationDegree).circle(0, y, cfg.pointRadius,set.pointColor,set.pointBorderColor,cfg.pointBorderWidth);
+                    }
+                    if(animPc >= 1){
+                        var p = getPosition(y,j);
+                        pointRanges.push([p[0],p[1],j,i]);
+                    }
+                });
+                ctx.rotate(rotationDegree);
+
             }, this);
             ctx.restore();
-
+            if(cfg.showText){
+                drawText();
+            }
             function getY(d){
                 return -animPc * _this.calcOffset(d, scale.yScaleValue, scale.yHop);
             }
@@ -1601,6 +1680,17 @@ window.JingleChart = JChart = {
                 y = Math.sin(angel)*radius + _this.height/2;
                 return [x,y];
             }
+        }
+
+        function drawText(){
+            _.each(pointRanges,function(p){
+                var y = p[1];
+                if(y > _this.height/2){
+                    y += 6;
+                }
+                _this.drawText(_this.data.datasets[p[3]].data[p[2]],p[0],y,[p[2],p[3]]);
+            });
+
         }
 
         function isInPointRange(x,y){
@@ -1630,7 +1720,7 @@ window.JingleChart = JChart = {
             P_Y = 20,//y轴左侧空白
             P_X = 10;//x轴文本与x之间的间距
         _.Chart.apply(this);
-        _.mergeObj(this.config,{
+        _.extend(this.config,{
             /**
              * @Object
              * Y轴刻度值，默认为null，会自动生成，也可以自己指定
@@ -1644,24 +1734,24 @@ window.JingleChart = JChart = {
             //xy轴刻度线的颜色
             scaleLineColor : "rgba(0,0,0,.3)",
             //刻度线宽度
-            scaleLineWidth :1,
-            //是否显示刻度值
+            scaleLineWidth:1,
+            //是否显示Y轴刻度值
             showScaleLabel : true,
-            //刻度值字体属性
-            scaleFontFamily : "Arial",
-            scaleFontSize : 12,
-            scaleFontStyle : "normal",
-            scaleFontColor : "#666",
-            //刻度值字体属性
+            //是否显示X轴刻度值
             showLabel : true,
-            labelFontFamily : "Arial",
-            labelFontSize : 12,
-            labelFontStyle : "normal",
-            labelFontColor : "#5b5b5b",
+            //刻度值字体属性
+            scaleFont : {
+                size:12,
+                color : '#666'
+            },
+            textFont : {
+                size : 14,
+                textBaseline : 'bottom'
+            },
             //是否显示网格线
             showGridLine : true,
             //网格线颜色
-            gridLineColor : "rgba(0,0,0,.05)",
+            gridLineColor : "rgba(0,0,0,.1)",
             //网格线宽度
             gridLineWidth : 1
         })
@@ -1683,9 +1773,10 @@ window.JingleChart = JChart = {
          * 计算X轴文本宽度、旋转角度及Y轴高度
          */
         this.calcDrawingSizes = function(){
-            var maxSize = this.height,widestX = 0,xLabelWidth = 0,xLabelHeight = this.config.scaleFontSize,labelRotate = 0,dataLen = this.chartData.labels.length;
+            var maxSize = this.height,widestX = 0,scaleFontSize = this.config.scaleFont.size, xLabelWidth = 0,xLabelHeight = scaleFontSize,
+                labelRotate = 0,dataLen = this.chartData.labels.length;
             //计算X轴，如果发现数据宽度超过总宽度，需要将label进行旋转
-            this.ctx.set('font',this.config.scaleFontStyle + " " + this.config.scaleFontSize+"px " + this.config.scaleFontFamily);
+            this.ctx.set(this.config.scaleFont);
             //找出最宽的label
             _.each(this.chartData.labels,function(o){
                 var w = this.ctx.measureText(o).width;
@@ -1698,23 +1789,21 @@ window.JingleChart = JChart = {
                 xLabelHeight = Math.sin(labelRotate*Math.PI/180) * widestX ;
                 if (this.width/dataLen < xLabelHeight){
                     labelRotate = 90;
-                    xLabelWidth = this.config.scaleFontSize;
+                    xLabelWidth = scaleFontSize;
                     xLabelHeight = widestX;
                 }
-
             }
             //减去x轴label的高度
             maxSize -= xLabelHeight;
             //减去x轴文本与x轴之间的间距
             maxSize -= P_X;
             //给Y轴顶部留一点空白
-            P_T += this.config.showLabel?this.config.labelFontSize:0;
             maxSize -= P_T;
-
+            maxSize -= this.config.showText?scaleFontSize:0;
             //y轴高度
             this.scaleData.yHeight = maxSize;
             //y轴刻度高度
-            this.scaleData.yLabelHeight = this.config.scaleFontSize;
+            this.scaleData.yLabelHeight = scaleFontSize;
             //x轴文本旋转角度
             this.scaleData.labelRotate = labelRotate;
             //x轴文本的宽度
@@ -1753,12 +1842,12 @@ window.JingleChart = JChart = {
          * 计算Y轴刻度的各项数据
          */
         this.calcYAxis = function(){
-            var config = this.config,scale = config.scale;
+            var scale = this.config.scale;
             if (scale){
                 scale.start = scale.start || 0;
                 scale.labels = this.populateLabels(scale.step,scale.start,scale.stepValue);
             }else {
-                var bounds = this.getValueBounds(this.chartData.datasets ? this.chartData.datasets : this.chartData);
+                var bounds = this.getValueBounds(this.chartData.datasets);
                 scale = this.calcScale(this.scaleData.yHeight,bounds.maxSteps,bounds.minSteps,bounds.maxValue,bounds.minValue);
             }
             this.scaleData.yScaleValue = scale;
@@ -1779,8 +1868,7 @@ window.JingleChart = JChart = {
                 yLabelWidth += P_Y;
             }
             //x轴的宽度
-            P_R += this.config.showLabel?this.config.labelFontSize:0;
-            xAxisLength = this.width - yLabelWidth-P_R;
+            xAxisLength = this.width - yLabelWidth-P_R-(this.config.showText?this.config.textFont.size:0);
 
             if(this._type_ == 'bar'){//计算柱形图柱子宽度，柱形图x轴文本居中显示，需要重新计算数据项宽度
                 valueHop = Math.floor(xAxisLength/this.chartData.labels.length);
@@ -1796,9 +1884,16 @@ window.JingleChart = JChart = {
         }
 
         this.drawScale = function(){
-            var ctx = this.ctx,config = this.config,scale = this.scaleData,align;
+            var ctx = this.ctx,cfg = this.config,scale = this.scaleData,align;
+            ctx.set({
+                strokeStyle :  cfg.scaleLineColor,
+                lineWidth : cfg.scaleLineWidth
+            })
             //画X轴
-            ctx.line(scale.x-3, scale.y, scale.x+scale.xWidth, scale.y, config.scaleLineColor, config.scaleLineWidth);
+            ctx.line(scale.x-3, scale.y, scale.x+scale.xWidth, scale.y, true);
+            //画Y轴
+            ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, true);
+
             //画X轴刻度文本
             if (scale.labelRotate > 0){
                 ctx.save();
@@ -1807,10 +1902,12 @@ window.JingleChart = JChart = {
                 align = 'center';
             }
             ctx.set({
-                fillStyle : config.scaleFontColor,
+                fillStyle : cfg.scaleFont.color,
+                textAlign : align,
                 textBaseline : 'hanging',
-                textAlign : align
-            })
+                strokeStyle : cfg.gridLineColor,
+                lineWidth : cfg.gridLineWidth
+            });
             _.each(this.chartData.labels,function(label,i){
                 ctx.save();
                 var cx = scale.x + i*scale.xHop,labelY = scale.y + P_X/ 2,
@@ -1820,23 +1917,19 @@ window.JingleChart = JChart = {
                 }else{
                     ctx.fillText(label, labelX,labelY);
                 }
-
                 //画纵向的网格线
-                if(config.showGridLine){
+                if(cfg.showGridLine){
                     var x = (this._type_ == 'bar')?cx + scale.xHop : cx;
-                    ctx.line(x, scale.y, x, scale.y-scale.yHeight, config.gridLineColor, config.gridLineWidth);
+                    ctx.line(x, scale.y, x, scale.y-scale.yHeight,true);
                 }
             },this);
 
-            //画Y轴
-            ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, config.scaleLineColor, config.scaleLineWidth);
-
             //画横向网格线
-            ctx.set('textAlign','right').set('textBaseline','middle');
+            ctx.set({textAlign:'right',textBaseline:'middle'});
             for (var j=0; j<scale.yScaleValue.step; j++){
                 var y = scale.y - ((j+1) * scale.yHop);
-                config.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, config.gridLineColor, config.gridLineWidth);
-                config.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
+                cfg.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, true);
+                cfg.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
             }
         }
 
@@ -1845,16 +1938,6 @@ window.JingleChart = JChart = {
             this.calcYAxis();
             showX && this.calcXAxis();
         }
-
-        this.drawText = function(x,y,value){
-            this.ctx.save().fillText(value,x,y-3,{
-                textBaseline : 'bottom',
-                textAlign : 'center',
-                fillStyle : this.config.labelFontColor,
-                font : this.config.labelFontStyle + " " + this.config.labelFontSize+"px " + this.config.labelFontFamily
-            }).restore();
-        }
-
         this.drawPoint = function(x,y,d){
             //填充色默认为白色，边框颜色默认与线条颜色一致
             this.ctx.beginPath().circle(x,y,this.config.pointRadius,d.pointColor || '#fff',d.pointBorderColor || d.color,this.config.pointBorderWidth);
@@ -1925,8 +2008,9 @@ window.JingleChart = JChart = {
                 }
                 //小数点位数与stepValue后的小数点一致
                 var value = (start + (stepValue * i)).toFixed(_.getDecimalPlaces(stepValue));
-                var v = this.trigger('renderScaleLabel',[value]);
-                labels.push(v ? v : value);
+                var text = this.trigger('renderYLabel',[value]);
+                text = text ? text : value;
+                labels.push(text);
             }
             return labels;
         },
@@ -1954,7 +2038,7 @@ window.JingleChart = JChart = {
             var _this = this,
             	touchDistanceX,//手指滑动偏移量
                 startPosition,//触摸初始位置记录
-                dataOffset = 0,//数据偏移量
+                dataOffset = 0,//数据偏移量-已经偏移
                 currentOffset = 0,//当前一次滑动的偏移量
                 dataNum = this.config.datasetShowNumber,//每屏显示的数据条数
                 gestureStarted,
@@ -1963,9 +2047,9 @@ window.JingleChart = JChart = {
 				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
 				END_EV = hasTouch ? 'touchend' : 'mouseup';
 
-            this.ctx.canvas.addEventListener(START_EV,touchstart);
-            this.ctx.canvas.addEventListener(MOVE_EV,touchmove);
-            this.ctx.canvas.addEventListener(END_EV,touchend);
+            this.ctx.el.addEventListener(START_EV,touchstart);
+            this.ctx.el.addEventListener(MOVE_EV,touchmove);
+            this.ctx.el.addEventListener(END_EV,touchend);
 
             function touchstart(e){
             	e = e.touches ? e.touches[0] : e;
@@ -1982,19 +2066,16 @@ window.JingleChart = JChart = {
                 var x = e.pageX;
                 var y = e.pageY;
                 touchDistanceX = x - startPosition.x;
-				//允许1/10的误差范围
-                //if(touchDistanceX%_this.scaleData.xHop < _this.scaleData.xHop/10){
-            	if(Math.floor(touchDistanceX)%20 < 10){//每滑动20px加载下一组数据，中间偶尔可能会重复加载
-                    var totalLen = _this.data.labels.length;//数据总长度
-                    var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
-                    if(offset+dataNum > totalLen)return;
-                    if(offset < 0)return;
-                    currentOffset = offset;
-                    //将操作加入系统队列，解决android系统下touchmove的bug
-                    setTimeout(function(){
-                    	_this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
-                    },0)
-                }
+            	//每滑动xHop加载下一组数据
+                var totalLen = _this.data.labels.length;//数据总长度
+                var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
+                if(offset < 0 || offset == currentOffset||(offset+dataNum > totalLen))return;
+                currentOffset = offset;
+                console.log(offset);
+                //将操作加入系统队列，解决android系统下touchmove的bug
+                setTimeout(function(){
+                    _this.redraw(_this.sliceData(_this.data,offset,totalLen,dataNum));
+                },0)
             }
             function touchend(event){
                 gestureStarted = false;

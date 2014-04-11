@@ -79,7 +79,6 @@
                     }
                 });
                 ctx.stroke(set.color,cfg.lineWidth);
-
                 //填充区域
                 cfg.fill ? ctx.lineTo(scale.x + (scale.xHop*(set.data.length-1)),scale.y).lineTo(scale.x,scale.y).closePath()
                     .fill(set.fillColor?set.fillColor : _.hex2Rgb(set.color,0.6)) : ctx.closePath();

@@ -25,8 +25,10 @@
             scaleLineColor : "rgba(0,0,0,.3)",
             //刻度线宽度
             scaleLineWidth:1,
-            //是否显示刻度值
+            //是否显示Y轴刻度值
             showScaleLabel : true,
+            //是否显示X轴刻度值
+            showLabel : true,
             //刻度值字体属性
             scaleFont : {
                 size:12,
@@ -135,7 +137,7 @@
                 scale.start = scale.start || 0;
                 scale.labels = this.populateLabels(scale.step,scale.start,scale.stepValue);
             }else {
-                var bounds = this.getValueBounds(this.chartData.datasets || this.chartData);
+                var bounds = this.getValueBounds(this.chartData.datasets);
                 scale = this.calcScale(this.scaleData.yHeight,bounds.maxSteps,bounds.minSteps,bounds.maxValue,bounds.minValue);
             }
             this.scaleData.yScaleValue = scale;
@@ -226,13 +228,6 @@
             this.calcYAxis();
             showX && this.calcXAxis();
         }
-
-//        this.drawText = function(x,y,value,j,i){
-//            var text = this.trigger('renderText',[value,j,j]);
-//            text = text?text:value;
-//            this.ctx.fillText(text,x,y,this.config.textFont);
-//        }
-
         this.drawPoint = function(x,y,d){
             //填充色默认为白色，边框颜色默认与线条颜色一致
             this.ctx.beginPath().circle(x,y,this.config.pointRadius,d.pointColor || '#fff',d.pointBorderColor || d.color,this.config.pointBorderWidth);

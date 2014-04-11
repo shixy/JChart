@@ -4,6 +4,7 @@
     <title>Line</title>
     <meta charset="utf-8">
     <meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+    <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="../src/JChart.js"></script>
     <script type="text/javascript" src="../src/JChart.Canvas.js"></script>
     <script type="text/javascript" src="../src/JChart.Chart.js"></script>
@@ -11,12 +12,19 @@
     <script type="text/javascript" src="../src/JChart.Line.js"></script>
 </head>
 <body>
-<canvas id="canvas1" height="300" width="500"></canvas>
+<h1 style="text-align: center">折线图</h1>
+
+<div class="chartsContainer">
+    <div>公司产品销售汇总(2012-2014)</div>
+    <canvas id="line_canvas" height="300" width="500"></canvas>
+</div>
+
 <script type="text/javascript">
     var data = {
         labels : ["2012","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2013',"二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月','2014','一月','二月'],
         datasets : [
             {
+                name : 'A产品',
                 fillColor : "rgba(220,220,220,0.5)",
                 color : "rgba(220,220,220,1)",
                 pointColor : "rgba(220,220,220,1)",
@@ -24,6 +32,7 @@
                 data : [65,59,90,81,56,55,40,20,13,20,11,60,65,59,90,81,56,55,40,20,11,20,10,60,11,60,65]
             },
             {
+                name : 'B产品',
                 fillColor : "rgba(151,187,205,0.5)",
                 color : "rgba(151,187,205,1)",
                 pointColor : "rgba(151,187,205,1)",
@@ -33,21 +42,15 @@
         ]
     }
     var line = new JChart.Line(data,{
-        id : 'canvas1',
-//        scale : {
-//            step : 10,
-//            stepValue : 10,
-//            start : 0
-//        },
-        datasetGesture : false
+        id : 'line_canvas',
+        datasetGesture : true
     });
     line.on('tap.point',function(data,i,j){
-        alert(JSON.stringify(data));
+        alert(data);
     });
-    line.on('renderScaleLabel',function(v){
-        return v+'%';
-    })
-    line.refresh();
+    line.draw();
+
+
 
 </script>
 </body>

@@ -2,7 +2,6 @@
 <html lang="zh-cn">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!-- Meta, title, CSS, favicons, etc. -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +12,7 @@
     <!-- Documentation extras -->
     <link href="http://v3.bootcss.com/docs-assets/css/docs.css" rel="stylesheet">
     <link href="http://cdn.bootcss.com/highlight.js/7.3/styles/github.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
         body {
             font-family: "ff-tisa-web-pro-1", "ff-tisa-web-pro-2", "Lucida Grande", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "WenQuanYi Micro Hei", sans-serif;
@@ -59,15 +59,15 @@
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav">
                 <li>
-                    <a href="doc.html">文档</a>
+                    <a href="vycool.com/Jingle/" target="_blank">Jingle UI</a>
                 </li>
                 <li>
-                    <a href="demo.html">DEMO</a>
+                    <!--<a href="demo.html">DEMO</a>-->
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a href="about.html">关于</a>
+                    <!--<a href="about.html">关于</a>-->
                 </li>
             </ul>
         </nav>
@@ -79,7 +79,9 @@
 <div class="bs-header" id="content">
     <div class="container">
         <h1>Jingle Chart</h1>
-        <p>移动端专属。极简的图表控件，简单的图形+合适的接口，打造交互丰富的图表。</p>
+        <p>专为移动端打造，一个简单的图表控件。</p>
+        <p>没有标题，没有图例，只有一个简简单单的图，加一些合适的接口，其他的你来发挥吧。。</p>
+        <p>目前还极度不完善...慎用，供参考</p>
     </div>
 </div>
 
@@ -140,10 +142,19 @@
                 <small>折线图、平滑曲线图、面积图</small>
             </h1>
         </div>
-        <p>Line Chart可以用来画普通的折线图、平滑曲线图、面积图</p>
+        <p>Line Chart可以用来画普通的折线图、平滑曲线图、面积图<br>大数据量支持拖动显示</p>
 
         <div class="bs-example">
-            <canvas id="line_canvas" width="400" height="400"></canvas>
+            <div class="chart-title">公司产品销售汇总(2012-2014)</div>
+            <div class="chart-lengend">
+                <div class="glyphicon glyphicon-stop" style="color: #72caed">A产品</div>
+                <div class="glyphicon glyphicon-stop" style="color: #a6d854">B产品</div>
+            </div>
+            <canvas id="line_canvas" width="800" height="400"></canvas>
+            <div style="margin-top: 10px;font-size: 12px;color: #666">
+                <span class="glyphicon glyphicon-hand-right" style="color: #E74C3C;margin-right: 10px;"></span>
+                拖动鼠标看看
+            </div>
         </div>
 
         <h3 id="line_usage">用法</h3>
@@ -174,12 +185,18 @@ var line = new JChart.Line(data,config);</code></pre>
                 <tr>
                     <th style="width: 100px;">名称</th>
                     <th style="width: 50px;">类型</th>
-                    <th style="width: 50px;">默认值</th>
+                    <th >默认值</th>
                     <th>描述</th>
                 </tr>
                 </thead>
                 <tbody>
                 <!-- scale -->
+                <tr>
+                    <td>bgColor</td>
+                    <td>String</td>
+                    <td>#fff</td>
+                    <td>图表背景</td>
+                </tr>
                 <tr>
                     <td>showScaleLabel</td>
                     <td>Boolean</td>
@@ -190,7 +207,7 @@ var line = new JChart.Line(data,config);</code></pre>
                     <td>scaleLineColor</td>
                     <td>String</td>
                     <td>rgba(0,0,0,.3)</td>
-                    <td>xy轴刻度线的颜色,只支持rgb和hex，不支持字符串颜色如red,white等</td>
+                    <td>xy轴刻度线的颜色</td>
                 </tr>
                 <tr>
                     <td>scaleLineWidth</td>
@@ -209,58 +226,36 @@ var line = new JChart.Line(data,config);</code></pre>
                     </td>
                 </tr>
                 <tr>
-                    <td>scaleFontFamily</td>
-                    <td>String</td>
-                    <td>Arial</td>
+                    <td>scaleFont</td>
+                    <td>Object</td>
+                    <td>
+                        family : 'Arial'<br>
+                        size : 16<br>
+                        style : 'normal'<br>
+                        color : '#5b5b5b'<br>
+                        textAlign : 'center'<br>
+                        textBaseLine : 'Middle'<br>
+                    </td>
                     <td>刻度值字体</td>
                 </tr>
                 <tr>
-                    <td>scaleFontSize</td>
-                    <td>Number</td>
-                    <td>12</td>
-                    <td>刻度值字体大小</td>
-                </tr>
-                <tr>
-                    <td>scaleFontStyle</td>
-                    <td>String</td>
-                    <td>normal</td>
-                    <td>刻度值字体风格</td>
-                </tr>
-                <tr>
-                    <td>scaleFontColor</td>
-                    <td>String</td>
-                    <td>#666</td>
-                    <td>刻度值字体颜色</td>
-                </tr>
-                <tr>
-                    <td>showLabel</td>
+                    <td>showText</td>
                     <td>String</td>
                     <td>true</td>
                     <td>是否显示数据文本(显示在连接点上)</td>
                 </tr>
                 <tr>
-                    <td>labelFontFamily</td>
-                    <td>String</td>
-                    <td>Arial</td>
-                    <td>数据文本字体</td>
-                </tr>
-                <tr>
-                    <td>labelFontSize</td>
-                    <td>Number</td>
-                    <td>12</td>
-                    <td>数据文本字体大小</td>
-                </tr>
-                <tr>
-                    <td>labelFontStyle</td>
-                    <td>String</td>
-                    <td>normal</td>
-                    <td>数据文本字体风格</td>
-                </tr>
-                <tr>
-                    <td>labelFontColor</td>
-                    <td>String</td>
-                    <td>#666</td>
-                    <td>数据文本字体颜色</td>
+                    <td>textFont</td>
+                    <td>Object</td>
+                    <td>
+                        family : 'Arial'<br>
+                        size : 16<br>
+                        style : 'normal'<br>
+                        color : '#5b5b5b'<br>
+                        textAlign : 'center'<br>
+                        textBaseLine : 'Middle'<br>
+                    </td>
+                    <td>数据文本字体样式</td>
                 </tr>
                 <tr>
                     <td>showGridLine</td>
@@ -336,6 +331,31 @@ var line = new JChart.Line(data,config);</code></pre>
                     <td>12</td>
                     <td>每次显示的数据条数</td>
                 </tr>
+                <!--chart-->
+                <tr>
+                    <td>drawScaleFirst</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>优先画刻度值</td>
+                </tr>
+                <tr>
+                    <td>animation</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否开启动画</td>
+                </tr>
+                <tr>
+                    <td>animationSteps</td>
+                    <td>Number</td>
+                    <td>60</td>
+                    <td>动画帧数</td>
+                </tr>
+                <tr>
+                    <td>animationEasing</td>
+                    <td>String</td>
+                    <td>easeOutBounce</td>
+                    <td>动画函数</td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -350,6 +370,11 @@ var line = new JChart.Line(data,config);</code></pre>
                 </tr>
                 </thead>
                 <tbody>
+                <tr>
+                    <td>draw</td>
+                    <td></td>
+                    <td>绘制图表</td>
+                </tr>
                 <tr>
                     <td>refresh</td>
                     <td><a href="#line_config">config</a>:同配置参数</td>
@@ -376,6 +401,22 @@ var line = new JChart.Line(data,config);</code></pre>
                 </tr>
                 </thead>
                 <tbody>
+                <tr>
+                    <td>renderYLabel</td>
+                    <td>
+                        value:Y轴刻度值
+                    </td>
+                    <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+                </tr>
+                <tr>
+                    <td>renderText</td>
+                    <td>
+                        value:数据项<br>
+                        i : 数据项在数据子集中索引<br>
+                        j: 子集在总数据集中的索引
+                    </td>
+                    <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+                </tr>
                 <tr>
                     <td>tap.point</td>
                     <td>
@@ -413,33 +454,45 @@ var line = new JChart.Line(data,config);</code></pre>
             <small></small>
         </h1>
     </div>
-    <p>Bar Chart</p>
+    <p>目前只支持简单的柱形图、簇状图<br>
+       大数据量支持拖动显示<br>
+       未来会增加堆积图、横向图
+    </p>
 
     <div class="bs-example">
-        <canvas id="bar_canvas" width="400" height="400"></canvas>
+        <div class="chart-title">公司产品销售汇总(2012-2014)</div>
+        <div class="chart-lengend">
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">A产品</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">B产品</div>
+        </div>
+        <canvas id="bar_canvas" width="800" height="400"></canvas>
+        <div style="margin-top: 10px;font-size: 12px;color: #666">
+            <span class="glyphicon glyphicon-hand-right" style="color: #E74C3C;margin-right: 10px;"></span>
+            拖动鼠标看看
+        </div>
     </div>
 
     <h3 id="bar_usage">用法</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">//简单用法
-                var bar = new JChart.Bar(data,'#canvasId');
-                //更多配置
-                var bar = new JChart.Bar(data,{
-                showBarBorder : false
-                });
-                //方法
-                //事件
-                bar.on('tap.bar',function(data,i,j){
-                alert(data);
-                })</code></pre>
+var bar = new JChart.Bar(data,'#canvasId');
+//更多配置
+var bar = new JChart.Bar(data,{
+    showBarBorder : false
+});
+//方法
+//事件
+bar.on('tap.bar',function(data,i,j){
+    alert(data);
+})</code></pre>
     </div>
 
     <h3 id="bar_config">配置项</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">var config = {
-                smooth : true
-                }
-                var bar = new JChart.Bar(data,config);</code></pre>
+    smooth : true
+}
+var bar = new JChart.Bar(data,config);</code></pre>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -454,6 +507,12 @@ var line = new JChart.Line(data,config);</code></pre>
             <tbody>
             <!-- scale -->
             <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
                 <td>showScaleLabel</td>
                 <td>Boolean</td>
                 <td>true</td>
@@ -463,7 +522,7 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>scaleLineColor</td>
                 <td>String</td>
                 <td>rgba(0,0,0,.3)</td>
-                <td>xy轴刻度线的颜色,只支持rgb和hex，不支持字符串颜色如red,white等</td>
+                <td>xy轴刻度线的颜色</td>
             </tr>
             <tr>
                 <td>scaleLineWidth</td>
@@ -482,58 +541,36 @@ var line = new JChart.Line(data,config);</code></pre>
                 </td>
             </tr>
             <tr>
-                <td>scaleFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
                 <td>刻度值字体</td>
             </tr>
             <tr>
-                <td>scaleFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>刻度值字体大小</td>
-            </tr>
-            <tr>
-                <td>scaleFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>刻度值字体风格</td>
-            </tr>
-            <tr>
-                <td>scaleFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>刻度值字体颜色</td>
-            </tr>
-            <tr>
-                <td>showLabel</td>
+                <td>showText</td>
                 <td>String</td>
                 <td>true</td>
-                <td>是否显示数据文本(显示在连接点上)</td>
+                <td>是否显示数据文本(显示在柱子上方)</td>
             </tr>
             <tr>
-                <td>labelFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
-                <td>数据文本字体</td>
-            </tr>
-            <tr>
-                <td>labelFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>数据文本字体大小</td>
-            </tr>
-            <tr>
-                <td>labelFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>数据文本字体风格</td>
-            </tr>
-            <tr>
-                <td>labelFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>数据文本字体颜色</td>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
             </tr>
             <tr>
                 <td>showGridLine</td>
@@ -591,6 +628,31 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>12</td>
                 <td>每次显示的数据条数</td>
             </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
+            </tr>
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
             </tbody>
         </table>
     </div>
@@ -605,6 +667,22 @@ var line = new JChart.Line(data,config);</code></pre>
             </tr>
             </thead>
             <tbody>
+            <tr>
+                <td>renderYLabel</td>
+                <td>
+                    value:Y轴刻度值
+                </td>
+                <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    value:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
             <tr>
                 <td>refresh</td>
                 <td><a href="#bar_config">config</a>:同配置参数</td>
@@ -668,35 +746,62 @@ var line = new JChart.Line(data,config);</code></pre>
             <small>饼状图、环形图</small>
         </h1>
     </div>
-    <p>Pie Chart。支持饼图和环形图，多种交互方式</p>
+    <p>
+        支持饼图和环形图，多种交互方式<br>
+        支持半圆形图表(或者任意角度)
+    </p>
 
     <div class="bs-example">
-        <canvas id="pie_canvas" width="400" height="400"></canvas>
+        <div class="chart-title">网站访问来源</div>
+        <div class="chart-lengend" style="width: 320px">
+            <div class="glyphicon glyphicon-stop" style="color: #F38630">直接访问</div>
+            <div class="glyphicon glyphicon-stop" style="color: #E0E4CC">联盟广告</div>
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">视频广告</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">搜索引擎</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="pie_canvas" width="300" height="300" style="margin: 0 auto;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="dount_canvas" width="300" height="300" style="margin: 0 auto;"></canvas>
+                <div class="arrow_container">
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <canvas id="sector_canvas_1" width="300" height="200" style="margin: 0 10px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="sector_canvas_2" width="300" height="300" style="margin: 0 10px;"></canvas>
+            </div>
+        </div>
+
     </div>
 
     <h3 id="pie_usage">用法</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">//简单用法
-                //饼图
-                var pie = new JChart.Pie(data,'#canvasId');
-                //环形图
-                var dount = new JChart.Pie(data,{
-                    isDount:true
-                });
-                //方法
-                //事件
-                pie.on('tap.pullOut',function(data,i){
-                alert('第'+i+'个扇形弹出了');
-                })</code></pre>
+//饼图
+var pie = new JChart.Pie(data,'#canvasId');
+//环形图
+var dount = new JChart.Pie(data,{
+    isDount:true
+});
+//方法
+//事件
+pie.on('tap.pullOut',function(data,i){
+    alert('第'+i+'个扇形弹出了');
+})</code></pre>
     </div>
 
     <h3 id="pie_config">配置项</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">var config = {
-                isDount : true,
-                startAngle : -Math.PI/2
-                }
-                var pie = new JChart.Pie(data,config);</code></pre>
+    isDount : true,
+    startAngle : -Math.PI/2
+}
+var pie = new JChart.Pie(data,config);</code></pre>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -726,6 +831,13 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>Number</td>
                 <td>2</td>
                 <td>扇形边框宽度</td>
+            </tr>
+            <tr>
+                <td>totalAngle</td>
+                <td>Number</td>
+                <td>Math.PI*2</td>
+                <td>整个图形的角度，默认为圆形
+                </td>
             </tr>
             <tr>
                 <td>startAngle</td>
@@ -784,22 +896,42 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>环形图小圆中的文字字体</td>
             </tr>
             <tr>
-                <td>dountTextColor</td>
-                <td>String</td>
-                <td>#e74c3c</td>
-                <td>环形图小圆中的文字颜色</td>
+                <td>dountFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 20<br>
+                    style : 'normal'<br>
+                    color : '#3498DB'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>小圆中的文本</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
             </tr>
             <tr>
-                <td>dountTextBaseline</td>
-                <td>String</td>
-                <td>middle</td>
-                <td>小圆文字基线</td>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
             </tr>
             <tr>
-                <td>dountTextAlign</td>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
                 <td>String</td>
-                <td>center</td>
-                <td>小圆文字排列方向</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
             </tr>
             </tbody>
         </table>
@@ -867,6 +999,14 @@ var line = new JChart.Line(data,config);</code></pre>
             </thead>
             <tbody>
             <tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
                 <td>tap.pie</td>
                 <td>
                     data:数据项<br>
@@ -919,33 +1059,38 @@ var line = new JChart.Line(data,config);</code></pre>
             <small></small>
         </h1>
     </div>
-    <p>雷达图</p>
+    <p>普通的雷达图，支持圆形和菱形</p>
 
     <div class="bs-example">
-        <canvas id="radar_canvas" width="400" height="400"></canvas>
+        <div class="chart-title">手机A与手机B比较</div>
+        <div class="chart-lengend">
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">A手机</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">B手机</div>
+        </div>
+        <canvas id="radar_canvas" width="800" height="400"></canvas>
     </div>
 
     <h3 id="radar_usage">用法</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">//简单用法
-                var radar = new JChart.Radar(data,'#canvasId');
-                //更多配置
-                var radar = new JChart.Radar(data,{
-                fill : false
-                });
-                //方法
-                //事件
-                line.on('tap.point',function(data,i,j){
-                alert(data);
-                })</code></pre>
+var radar = new JChart.Radar(data,'#canvasId');
+//更多配置
+var radar = new JChart.Radar(data,{
+    fill : false
+});
+//方法
+//事件
+line.on('tap.point',function(data,i,j){
+    alert(data);
+})</code></pre>
     </div>
 
     <h3 id="radar_config">配置项</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">var config = {
-                fill : true
-                }
-                var radar = new JChart.Radar(data,config);</code></pre>
+    fill : true
+}
+var radar = new JChart.Radar(data,config);</code></pre>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -960,40 +1105,22 @@ var line = new JChart.Line(data,config);</code></pre>
             <tbody>
             <!-- scale -->
             <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
                 <td>showScaleLabel</td>
                 <td>Boolean</td>
                 <td>true</td>
                 <td>是否显示刻度值</td>
             </tr>
             <tr>
-                <td>scaleShowLabelBackdrop</td>
-                <td>Boolean</td>
-                <td>true</td>
-                <td>是否显示刻度文本背景</td>
-            </tr>
-            <tr>
-                <td>scaleBackdropColor</td>
-                <td>String</td>
-                <td>rgba(255,255,255,0.75)</td>
-                <td>刻度背景颜色</td>
-            </tr>
-            <tr>
-                <td>scaleBackdropPaddingY</td>
-                <td>Number</td>
-                <td>2</td>
-                <td>刻度内边距(上下)</td>
-            </tr>
-            <tr>
-                <td>scaleBackdropPaddingX</td>
-                <td>Number</td>
-                <td>2</td>
-                <td>刻度内边距(左右)</td>
-            </tr>
-            <tr>
                 <td>scaleLineColor</td>
                 <td>String</td>
                 <td>rgba(0,0,0,.3)</td>
-                <td>xy轴刻度线的颜色,只支持rgb和hex，不支持字符串颜色如red,white等</td>
+                <td>xy轴刻度线的颜色</td>
             </tr>
             <tr>
                 <td>scaleLineWidth</td>
@@ -1012,58 +1139,36 @@ var line = new JChart.Line(data,config);</code></pre>
                 </td>
             </tr>
             <tr>
-                <td>scaleFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
                 <td>刻度值字体</td>
             </tr>
             <tr>
-                <td>scaleFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>刻度值字体大小</td>
-            </tr>
-            <tr>
-                <td>scaleFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>刻度值字体风格</td>
-            </tr>
-            <tr>
-                <td>scaleFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>刻度值字体颜色</td>
-            </tr>
-            <tr>
-                <td>showLabel</td>
+                <td>showText</td>
                 <td>String</td>
                 <td>false</td>
                 <td>是否显示数据文本(显示在连接点上)</td>
             </tr>
             <tr>
-                <td>labelFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
-                <td>数据文本字体</td>
-            </tr>
-            <tr>
-                <td>labelFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>数据文本字体大小</td>
-            </tr>
-            <tr>
-                <td>labelFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>数据文本字体风格</td>
-            </tr>
-            <tr>
-                <td>labelFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>数据文本字体颜色</td>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
             </tr>
             <tr>
                 <td>showGridLine</td>
@@ -1145,6 +1250,43 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>true</td>
                 <td>是否填充为面积图</td>
             </tr>
+            <tr>
+                <td>scaleShowLabelBackdrop</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度文本背景</td>
+            </tr>
+            <tr>
+                <td>scaleBackdropColor</td>
+                <td>String</td>
+                <td>rgba(255,255,255,0.75)</td>
+                <td>刻度背景颜色</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
+            </tr>
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
             </tbody>
         </table>
     </div>
@@ -1186,6 +1328,22 @@ var line = new JChart.Line(data,config);</code></pre>
             </thead>
             <tbody>
             <tr>
+                <td>renderYLabel</td>
+                <td>
+                    value:Y轴刻度值
+                </td>
+                <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    value:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
                 <td>tap.point</td>
                 <td>
                     data:数据项<br>
@@ -1222,33 +1380,33 @@ var line = new JChart.Line(data,config);</code></pre>
             <small></small>
         </h1>
     </div>
-    <p>玫瑰图</p>
+    <p>简单的玫瑰图</p>
 
     <div class="bs-example">
-        <canvas id="polar_canvas" width="400" height="400"></canvas>
+        <div class="chart-title">网民上网时间分布</div>
+        <canvas id="polar_canvas" width="800" height="400"></canvas>
     </div>
 
     <h3 id="polar_usage">用法</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">//简单用法
-                var polar = new JChart.Line(data,'#canvasId');
-                //更多配置
-                var polar = new JChart.Polar(data,{
-                showSegmentBorder : false
-                });
-                //方法
-                //事件
-                polar.on('tap.segment',function(data,i){
-                alert(data);
-                })</code></pre>
+var polar = new JChart.Line(data,'#canvasId');
+//更多配置
+var polar = new JChart.Polar(data,{
+    showSegmentBorder : false
+});
+//方法
+//事件
+polar.on('tap.segment',function(data,i){
+    alert(data);
+})</code></pre>
     </div>
-
     <h3 id="polar_config">配置项</h3>
     <div class="highlight">
             <pre><code class="language-js javascript">var config = {
-                showSegmentBorder : true
-                }
-                var polar = new JChart.Polar(data,config);</code></pre>
+    showSegmentBorder : true
+}
+var polar = new JChart.Polar(data,config);</code></pre>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -1263,6 +1421,12 @@ var line = new JChart.Line(data,config);</code></pre>
             <tbody>
             <!-- scale -->
             <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
                 <td>showScaleLabel</td>
                 <td>Boolean</td>
                 <td>true</td>
@@ -1272,7 +1436,7 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>scaleLineColor</td>
                 <td>String</td>
                 <td>rgba(0,0,0,.3)</td>
-                <td>xy轴刻度线的颜色,只支持rgb和hex，不支持字符串颜色如red,white等</td>
+                <td>xy轴刻度线的颜色</td>
             </tr>
             <tr>
                 <td>scaleLineWidth</td>
@@ -1291,58 +1455,36 @@ var line = new JChart.Line(data,config);</code></pre>
                 </td>
             </tr>
             <tr>
-                <td>scaleFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
                 <td>刻度值字体</td>
             </tr>
             <tr>
-                <td>scaleFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>刻度值字体大小</td>
-            </tr>
-            <tr>
-                <td>scaleFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>刻度值字体风格</td>
-            </tr>
-            <tr>
-                <td>scaleFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>刻度值字体颜色</td>
-            </tr>
-            <tr>
-                <td>showLabel</td>
+                <td>showText</td>
                 <td>String</td>
                 <td>true</td>
-                <td>是否显示数据文本(显示在连接点上)</td>
+                <td>是否显示数据文本</td>
             </tr>
             <tr>
-                <td>labelFontFamily</td>
-                <td>String</td>
-                <td>Arial</td>
-                <td>数据文本字体</td>
-            </tr>
-            <tr>
-                <td>labelFontSize</td>
-                <td>Number</td>
-                <td>12</td>
-                <td>数据文本字体大小</td>
-            </tr>
-            <tr>
-                <td>labelFontStyle</td>
-                <td>String</td>
-                <td>normal</td>
-                <td>数据文本字体风格</td>
-            </tr>
-            <tr>
-                <td>labelFontColor</td>
-                <td>String</td>
-                <td>#666</td>
-                <td>数据文本字体颜色</td>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
             </tr>
             <tr>
                 <td>showGridLine</td>
@@ -1377,18 +1519,6 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>刻度背景颜色</td>
             </tr>
             <tr>
-                <td>scaleBackdropPaddingY</td>
-                <td>Number</td>
-                <td>2</td>
-                <td>刻度内边距(上下)</td>
-            </tr>
-            <tr>
-                <td>scaleBackdropPaddingX</td>
-                <td>Number</td>
-                <td>2</td>
-                <td>刻度内边距(左右)</td>
-            </tr>
-            <tr>
                 <td>showSegmentBorder</td>
                 <td>Boolean</td>
                 <td>true</td>
@@ -1417,6 +1547,25 @@ var line = new JChart.Line(data,config);</code></pre>
                 <td>Boolean</td>
                 <td>false</td>
                 <td>是否开启缩放动画</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
             </tr>
             </tbody>
         </table>
@@ -1458,6 +1607,14 @@ var line = new JChart.Line(data,config);</code></pre>
             </tr>
             </thead>
             <tbody>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项在数据集中索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
             <tr>
                 <td>tap.pie</td>
                 <td>
@@ -1516,5 +1673,7 @@ var line = new JChart.Line(data,config);</code></pre>
 <script src="js/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 <script src="js/application.js"></script>
+<script src="js/JChart.min.js"></script>
+<script src="js/doc.js"></script>
 </body>
 </html>

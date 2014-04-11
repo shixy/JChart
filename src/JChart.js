@@ -269,7 +269,7 @@ window.JingleChart = JChart = {
         else{
             return color;
         }
-        return 'rgb('+r+','+g+','+b+alpha?alpha:'1'+')';
+        return 'rgba('+r+','+g+','+ b + ','+(alpha?alpha:1)+')';
     },
     tmpl : (function(){
         //Javascript micro templating by John Resig - source at http://ejohn.org/blog/javascript-micro-templating/

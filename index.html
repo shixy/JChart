@@ -1,79 +1,1679 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="JingleChart - 移动端专属。极简的图表控件，简单的图形+合适的接口，打造交互丰富的图表">
+    <meta name="author" content="walker.shixy">
+    <title>Jingle Chart</title>
+    <link href="http://v3.bootcss.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Documentation extras -->
+    <link href="http://v3.bootcss.com/docs-assets/css/docs.css" rel="stylesheet">
+    <link href="http://cdn.bootcss.com/highlight.js/7.3/styles/github.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: "ff-tisa-web-pro-1", "ff-tisa-web-pro-2", "Lucida Grande", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "WenQuanYi Micro Hei", sans-serif;
+        }
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Jchart : Jingle Chart.移动端专属。极简单的图表控件，简单的图形+合适的接口，打造交互丰富的图表。" />
+        h1, .h1, h2, .h2, h3, .h3, h4, .h4, .lead {
+            font-family: "ff-tisa-web-pro-1", "ff-tisa-web-pro-2", "Lucida Grande", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "Microsoft YaHei UI", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+        }
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+        pre code {
+            background: transparent;
+        }
 
-    <title>Jchart</title>
-  </head>
+        @media (min-width: 768px) {
+            .bs-docs-home .bs-social,
+            .bs-docs-home .bs-masthead-links {
+                margin-left: 0;
+            }
+        }
 
-  <body>
+        .bs-docs-section p {
+            line-height: 2;
+        }
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/shixy/JChart">View on GitHub</a>
+        .bs-docs-section p.lead {
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+<a class="sr-only" href="#content">Skip to main content</a>
+<!-- Docs master nav -->
+<header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner">
+    <div class="container">
+        <div class="navbar-header">
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="index.html" class="navbar-brand">Jingle Chart</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="vycool.com/Jingle/" target="_blank">Jingle UI</a>
+                </li>
+                <li>
+                    <!--<a href="demo.html">DEMO</a>-->
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <!--<a href="about.html">关于</a>-->
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
-          <h1 id="project_title">Jchart</h1>
-          <h2 id="project_tagline">Jingle Chart.移动端专属。极简单的图表控件，简单的图形+合适的接口，打造交互丰富的图表。</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/shixy/JChart/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/shixy/JChart/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+<!-- Docs page layout -->
+<div class="bs-header" id="content">
+    <div class="container">
+        <h1>Jingle Chart</h1>
+        <p>专为移动端打造，一个简单的图表控件。</p>
+        <p>没有标题，没有图例，只有一个简简单单的图，加一些合适的接口，其他的你来发挥吧。。</p>
+        <p>目前还极度不完善...慎用，供参考</p>
+    </div>
+</div>
+
+<div class="container bs-docs-container">
+<div class="row">
+<div class="col-md-3">
+    <div class="bs-sidebar hidden-print affix-top" role="complementary">
+        <ul class="nav bs-sidenav">
+
+            <li class="active">
+                <a href="#line">折线图</a>
+                <ul class="nav">
+                    <li class=""><a href="#line_config">配置项</a></li>
+                    <li class=""><a href="#line_method">方法</a></li>
+                    <li class=""><a href="#line_event">事件</a></li>
+                </ul>
+            </li>
+            <li class="active">
+                <a href="#bar">柱状图</a>
+                <ul class="nav">
+                    <li class=""><a href="#bar_config">配置项</a></li>
+                    <li class=""><a href="#bar_method">方法</a></li>
+                    <li class=""><a href="#bar_event">事件</a></li>
+                </ul>
+            </li>
+            <li class="active">
+                <a href="#pie">饼状图</a>
+                <ul class="nav">
+                    <li class=""><a href="#pie_config">配置项</a></li>
+                    <li class=""><a href="#pie_method">方法</a></li>
+                    <li class=""><a href="#pie_event">事件</a></li>
+                </ul>
+            </li>
+            <li class="active">
+                <a href="#radar">雷达图</a>
+                <ul class="nav">
+                    <li class=""><a href="#radar_config">配置项</a></li>
+                    <li class=""><a href="#radar_method">方法</a></li>
+                    <li class=""><a href="#radar_event">事件</a></li>
+                </ul>
+            </li>
+            <li class="active">
+                <a href="#polar">玫瑰图</a>
+                <ul class="nav">
+                    <li class=""><a href="#polar_config">配置项</a></li>
+                    <li class=""><a href="#polar_method">方法</a></li>
+                    <li class=""><a href="#polar_event">事件</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="col-md-9" role="main">
+    <!-- Line chart -->
+    <div class="bs-docs-section">
+        <div class="page-header">
+            <h1 id="line">折线图
+                <small>折线图、平滑曲线图、面积图</small>
+            </h1>
+        </div>
+        <p>Line Chart可以用来画普通的折线图、平滑曲线图、面积图<br>大数据量支持拖动显示</p>
+
+        <div class="bs-example">
+            <div class="chart-title">公司产品销售汇总(2012-2014)</div>
+            <div class="chart-lengend">
+                <div class="glyphicon glyphicon-stop" style="color: #72caed">A产品</div>
+                <div class="glyphicon glyphicon-stop" style="color: #a6d854">B产品</div>
+            </div>
+            <canvas id="line_canvas" width="800" height="400"></canvas>
+            <div style="margin-top: 10px;font-size: 12px;color: #666">
+                <span class="glyphicon glyphicon-hand-right" style="color: #E74C3C;margin-right: 10px;"></span>
+                拖动鼠标看看
+            </div>
+        </div>
+
+        <h3 id="line_usage">用法</h3>
+        <div class="highlight">
+            <pre><code class="language-js javascript">//简单用法
+var line = new JChart.Line(data,'#canvasId');
+//更多配置
+var line = new JChart.Line(data,{
+    smooth : false
+});
+//方法
+//事件
+line.on('tap.point',function(data,i,j){
+    alert(data);
+})</code></pre>
+        </div>
+
+        <h3 id="line_config">配置项</h3>
+        <div class="highlight">
+            <pre><code class="language-js javascript">var config = {
+    smooth : true
+}
+var line = new JChart.Line(data,config);</code></pre>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 100px;">名称</th>
+                    <th style="width: 50px;">类型</th>
+                    <th >默认值</th>
+                    <th>描述</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- scale -->
+                <tr>
+                    <td>bgColor</td>
+                    <td>String</td>
+                    <td>#fff</td>
+                    <td>图表背景</td>
+                </tr>
+                <tr>
+                    <td>showScaleLabel</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否显示刻度值</td>
+                </tr>
+                <tr>
+                    <td>scaleLineColor</td>
+                    <td>String</td>
+                    <td>rgba(0,0,0,.3)</td>
+                    <td>xy轴刻度线的颜色</td>
+                </tr>
+                <tr>
+                    <td>scaleLineWidth</td>
+                    <td>Number</td>
+                    <td>1</td>
+                    <td>刻度线宽度</td>
+                </tr>
+                <tr>
+                    <td>scale</td>
+                    <td>Object</td>
+                    <td>null</td>
+                    <td>自定义Y轴刻度值，有三个属性： <br>
+                        step : 10(刻度的个数)<br>
+                        stepValue : 10(每两个刻度线之间的差值)<br>
+                        start : 0(起始刻度值)
+                    </td>
+                </tr>
+                <tr>
+                    <td>scaleFont</td>
+                    <td>Object</td>
+                    <td>
+                        family : 'Arial'<br>
+                        size : 16<br>
+                        style : 'normal'<br>
+                        color : '#5b5b5b'<br>
+                        textAlign : 'center'<br>
+                        textBaseLine : 'Middle'<br>
+                    </td>
+                    <td>刻度值字体</td>
+                </tr>
+                <tr>
+                    <td>showText</td>
+                    <td>String</td>
+                    <td>true</td>
+                    <td>是否显示数据文本(显示在连接点上)</td>
+                </tr>
+                <tr>
+                    <td>textFont</td>
+                    <td>Object</td>
+                    <td>
+                        family : 'Arial'<br>
+                        size : 16<br>
+                        style : 'normal'<br>
+                        color : '#5b5b5b'<br>
+                        textAlign : 'center'<br>
+                        textBaseLine : 'Middle'<br>
+                    </td>
+                    <td>数据文本字体样式</td>
+                </tr>
+                <tr>
+                    <td>showGridLine</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否显示网格线</td>
+                </tr>
+                <tr>
+                    <td>gridLineColor</td>
+                    <td>String</td>
+                    <td>rgba(0,0,0,.05)</td>
+                    <td>网格线颜色</td>
+                </tr>
+                <tr>
+                    <td>gridLineWidth</td>
+                    <td>Number</td>
+                    <td>1</td>
+                    <td>网格线宽度</td>
+                </tr>
+
+                <!-- line -->
+                <tr>
+                    <td>smooth</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>平滑曲线</td>
+                </tr>
+                <tr>
+                    <td>showPoint</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否显示线的连接点</td>
+                </tr>
+                <tr>
+                    <td>pointRadius</td>
+                    <td>Number</td>
+                    <td>4</td>
+                    <td>连接圆点半径</td>
+                </tr>
+                <tr>
+                    <td>pointBorderWidth</td>
+                    <td>Number</td>
+                    <td>2</td>
+                    <td>连接点的边框宽度</td>
+                </tr>
+                <tr>
+                    <td>pointClickBounds</td>
+                    <td>Number</td>
+                    <td>20</td>
+                    <td>连接点的点击范围(方便手指触摸)</td>
+                </tr>
+                <tr>
+                    <td>lineWidth</td>
+                    <td>Number</td>
+                    <td>2</td>
+                    <td>连接线的宽度</td>
+                </tr>
+                <tr>
+                    <td>fill</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否填充为面积图</td>
+                </tr>
+                <tr>
+                    <td>datasetGesture</td>
+                    <td>Boolean</td>
+                    <td>false</td>
+                    <td>是否可以对数据进行拖动</td>
+                </tr>
+                <tr>
+                    <td>datasetShowNumber</td>
+                    <td>Number</td>
+                    <td>12</td>
+                    <td>每次显示的数据条数</td>
+                </tr>
+                <!--chart-->
+                <tr>
+                    <td>drawScaleFirst</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>优先画刻度值</td>
+                </tr>
+                <tr>
+                    <td>animation</td>
+                    <td>Boolean</td>
+                    <td>true</td>
+                    <td>是否开启动画</td>
+                </tr>
+                <tr>
+                    <td>animationSteps</td>
+                    <td>Number</td>
+                    <td>60</td>
+                    <td>动画帧数</td>
+                </tr>
+                <tr>
+                    <td>animationEasing</td>
+                    <td>String</td>
+                    <td>easeOutBounce</td>
+                    <td>动画函数</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3 id="line_method">方法</h3>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 100px;">名称</th>
+                    <th>参数</th>
+                    <th>描述</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>draw</td>
+                    <td></td>
+                    <td>绘制图表</td>
+                </tr>
+                <tr>
+                    <td>refresh</td>
+                    <td><a href="#line_config">config</a>:同配置参数</td>
+                    <td>重新绘制图表，可以采用新的配置项</td>
+                </tr>
+                <tr>
+                    <td>load</td>
+                    <td>
+                        data : 新数据集<br>
+                        <a href="#line_config">config</a>:同配置参数（可选）</td>
+                    <td>载入新的数据</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3 id="line_event">事件</h3>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 100px;">名称</th>
+                    <th >参数</th>
+                    <th>描述</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>renderYLabel</td>
+                    <td>
+                        value:Y轴刻度值
+                    </td>
+                    <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+                </tr>
+                <tr>
+                    <td>renderText</td>
+                    <td>
+                        value:数据项<br>
+                        i : 数据项在数据子集中索引<br>
+                        j: 子集在总数据集中的索引
+                    </td>
+                    <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+                </tr>
+                <tr>
+                    <td>tap.point</td>
+                    <td>
+                        data:数据项<br>
+                        i : 数据项在数据子集中索引<br>
+                        j: 子集在总数据集中的索引
+                    </td>
+                    <td>点击连接线的点触发</td>
+                </tr>
+                <tr>
+                    <td>tap</td>
+                    <td>
+                        x:触摸点距离图表左侧的距离<br>
+                        y:触摸点距离图表顶部的距离
+                    </td>
+                    <td>点击图表时触发</td>
+                </tr>
+                <tr>
+                    <td>longTap</td>
+                    <td>
+                        x:触摸点距离图表左侧的距离<br>
+                        y:触摸点距离图表顶部的距离
+                    </td>
+                    <td>长按图表时触发</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    <!-- Bar chart -->
+    <div class="bs-docs-section">
+    <div class="page-header">
+        <h1 id="bar">柱状图
+            <small></small>
+        </h1>
+    </div>
+    <p>目前只支持简单的柱形图、簇状图<br>
+       大数据量支持拖动显示<br>
+       未来会增加堆积图、横向图
+    </p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+    <div class="bs-example">
+        <div class="chart-title">公司产品销售汇总(2012-2014)</div>
+        <div class="chart-lengend">
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">A产品</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">B产品</div>
+        </div>
+        <canvas id="bar_canvas" width="800" height="400"></canvas>
+        <div style="margin-top: 10px;font-size: 12px;color: #666">
+            <span class="glyphicon glyphicon-hand-right" style="color: #E74C3C;margin-right: 10px;"></span>
+            拖动鼠标看看
+        </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Jchart maintained by <a href="https://github.com/shixy">shixy</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+    <h3 id="bar_usage">用法</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">//简单用法
+var bar = new JChart.Bar(data,'#canvasId');
+//更多配置
+var bar = new JChart.Bar(data,{
+    showBarBorder : false
+});
+//方法
+//事件
+bar.on('tap.bar',function(data,i,j){
+    alert(data);
+})</code></pre>
     </div>
 
-    
+    <h3 id="bar_config">配置项</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">var config = {
+    smooth : true
+}
+var bar = new JChart.Bar(data,config);</code></pre>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th style="width: 50px;">类型</th>
+                <th style="width: 50px;">默认值</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- scale -->
+            <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
+                <td>showScaleLabel</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度值</td>
+            </tr>
+            <tr>
+                <td>scaleLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.3)</td>
+                <td>xy轴刻度线的颜色</td>
+            </tr>
+            <tr>
+                <td>scaleLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>刻度线宽度</td>
+            </tr>
+            <tr>
+                <td>scale</td>
+                <td>Object</td>
+                <td>null</td>
+                <td>自定义Y轴刻度值，有三个属性： <br>
+                    step : 10(刻度的个数)<br>
+                    stepValue : 10(每两个刻度线之间的差值)<br>
+                    start : 0(起始刻度值)
+                </td>
+            </tr>
+            <tr>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>刻度值字体</td>
+            </tr>
+            <tr>
+                <td>showText</td>
+                <td>String</td>
+                <td>true</td>
+                <td>是否显示数据文本(显示在柱子上方)</td>
+            </tr>
+            <tr>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
+            </tr>
+            <tr>
+                <td>showGridLine</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示网格线</td>
+            </tr>
+            <tr>
+                <td>gridLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.05)</td>
+                <td>网格线颜色</td>
+            </tr>
+            <tr>
+                <td>gridLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>网格线宽度</td>
+            </tr>
 
-  </body>
+            <!-- bar -->
+            <tr>
+                <td>showBarBorder</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示bar的边框</td>
+            </tr>
+            <tr>
+                <td>barBorderWidth</td>
+                <td>Number</td>
+                <td>2</td>
+                <td>bar边框宽度</td>
+            </tr>
+            <tr>
+                <td>barSpacing</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>每两个bar之间的间距</td>
+            </tr>
+            <tr>
+                <td>barSetSpacing</td>
+                <td>Number</td>
+                <td>5</td>
+                <td>每两组bar之间的间距</td>
+            </tr>
+            <tr>
+                <td>datasetGesture</td>
+                <td>Boolean</td>
+                <td>false</td>
+                <td>是否可以对数据进行拖动</td>
+            </tr>
+            <tr>
+                <td>datasetShowNumber</td>
+                <td>Number</td>
+                <td>12</td>
+                <td>每次显示的数据条数</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
+            </tr>
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="bar_method">方法</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th>参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>renderYLabel</td>
+                <td>
+                    value:Y轴刻度值
+                </td>
+                <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    value:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>refresh</td>
+                <td><a href="#bar_config">config</a>:同配置参数</td>
+                <td>重新绘制图表，可以采用新的配置项</td>
+            </tr>
+            <tr>
+                <td>load</td>
+                <td>
+                    data : 新数据集<br>
+                    <a href="#bar_config">config</a>:同配置参数（可选）</td>
+                <td>载入新的数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="bar_event">事件</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th >参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>tap.bar</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>点击柱子时触发</td>
+            </tr>
+            <tr>
+                <td>tap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>点击图表时触发</td>
+            </tr>
+            <tr>
+                <td>longTap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>长按图表时触发</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <!-- Pie chart -->
+    <div class="bs-docs-section">
+    <div class="page-header">
+        <h1 id="pie">饼图
+            <small>饼状图、环形图</small>
+        </h1>
+    </div>
+    <p>
+        支持饼图和环形图，多种交互方式<br>
+        支持半圆形图表(或者任意角度)
+    </p>
+
+    <div class="bs-example">
+        <div class="chart-title">网站访问来源</div>
+        <div class="chart-lengend" style="width: 320px">
+            <div class="glyphicon glyphicon-stop" style="color: #F38630">直接访问</div>
+            <div class="glyphicon glyphicon-stop" style="color: #E0E4CC">联盟广告</div>
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">视频广告</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">搜索引擎</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="pie_canvas" width="300" height="300" style="margin: 0 auto;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="dount_canvas" width="300" height="300" style="margin: 0 auto;"></canvas>
+                <div class="arrow_container">
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <canvas id="sector_canvas_1" width="300" height="200" style="margin: 0 10px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="sector_canvas_2" width="300" height="300" style="margin: 0 10px;"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <h3 id="pie_usage">用法</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">//简单用法
+//饼图
+var pie = new JChart.Pie(data,'#canvasId');
+//环形图
+var dount = new JChart.Pie(data,{
+    isDount:true
+});
+//方法
+//事件
+pie.on('tap.pullOut',function(data,i){
+    alert('第'+i+'个扇形弹出了');
+})</code></pre>
+    </div>
+
+    <h3 id="pie_config">配置项</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">var config = {
+    isDount : true,
+    startAngle : -Math.PI/2
+}
+var pie = new JChart.Pie(data,config);</code></pre>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th style="width: 50px;">类型</th>
+                <th style="width: 120px;">默认值</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>showSegmentBorder</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示扇形边框</td>
+            </tr>
+            <tr>
+                <td>segmentBorderColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>扇形边框颜色</td>
+            </tr>
+            <tr>
+                <td>segmentBorderWidth</td>
+                <td>Number</td>
+                <td>2</td>
+                <td>扇形边框宽度</td>
+            </tr>
+            <tr>
+                <td>totalAngle</td>
+                <td>Number</td>
+                <td>Math.PI*2</td>
+                <td>整个图形的角度，默认为圆形
+                </td>
+            </tr>
+            <tr>
+                <td>startAngle</td>
+                <td>Number</td>
+                <td>-Math.PI/2</td>
+                <td>第一个扇形块开始的地方 <br>
+                    默认从12点钟方向顺时针开始
+                </td>
+            </tr>
+            <tr>
+                <td>rotateAngle</td>
+                <td>Number</td>
+                <td>Math.PI/2</td>
+                <td>旋转扇形，使其中线指向的角度位置。<br>
+                用于当手点击扇形时自动将扇形旋转到该位置<br>
+                默认为6点钟方向</td>
+            </tr>
+            <tr>
+                <td>pullOutDistance</td>
+                <td>Number</td>
+                <td>10</td>
+                <td>点击扇形弹出的距离</td>
+            </tr>
+            <tr>
+                <td>clickType</td>
+                <td>String</td>
+                <td>pullOut</td>
+                <td>点击扇形自动触发的事件类型。可选值：<br>
+                    pullOut : 弹出扇形<br>
+                    rotate : 旋转扇形到指定位置<br>
+                    null : 点击时不做任何处理，但是仍会触发tap.segment事件
+                </td>
+            </tr>
+            <tr>
+                <td>isDount</td>
+                <td>Boolean</td>
+                <td>false</td>
+                <td>是否为环形图</td>
+            </tr>
+            <tr>
+                <td>dountRadiusPercent</td>
+                <td>Number</td>
+                <td>.4</td>
+                <td>环形图中间的小圆半径所占的比例</td>
+            </tr>
+            <tr>
+                <td>dountText</td>
+                <td>String</td>
+                <td>''</td>
+                <td>环形图小圆中的文字</td>
+            </tr>
+            <tr>
+                <td>dountTextFont</td>
+                <td>String</td>
+                <td>bold 30px Arial</td>
+                <td>环形图小圆中的文字字体</td>
+            </tr>
+            <tr>
+                <td>dountFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 20<br>
+                    style : 'normal'<br>
+                    color : '#3498DB'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>小圆中的文本</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
+            </tr>
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="pie_method">方法</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th>参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>toggleSegment</td>
+                <td>i:扇形索引</td>
+                <td>弹出/收起扇形块</td>
+            </tr>
+            <tr>
+                <td>pushIn</td>
+                <td>None</td>
+                <td>收起所有弹出的扇形块</td>
+            </tr>
+            <tr>
+                <td>pullOut</td>
+                <td>i:扇形索引</td>
+                <td>弹出指定的扇形块</td>
+            </tr>
+            <tr>
+                <td>rotate</td>
+                <td>i:扇形索引</td>
+                <td>旋转扇形块的中线指向配置中的旋转方向</td>
+            </tr>
+            <tr>
+                <td>setDountText</td>
+                <td>text:新的文本</td>
+                <td>重新设置小圆中的文本</td>
+            </tr>
+            <tr>
+                <td>refresh</td>
+                <td><a href="#bar_config">config</a>:同配置参数</td>
+                <td>重新绘制图表，可以采用新的配置项</td>
+            </tr>
+            <tr>
+                <td>load</td>
+                <td>
+                    data : 新数据集<br>
+                    <a href="#bar_config">config</a>:同配置参数（可选）</td>
+                <td>载入新的数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="pie_event">事件</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th >参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
+                <td>tap.pie</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>点击扇形时触发，需要返回Boolean结果<br>
+                若返回false，则后续的pullOut或者rotate都不会执行，即便配置了clickType，返回true会继续执行
+                </td>
+            </tr>
+            <tr>
+                <td>longTap.pie</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>长按扇形时触发</td>
+            </tr>
+            <tr>
+                <td>pushIn</td>
+                <td>
+                    None
+                </td>
+                <td>收起所有弹出的扇形时触发</td>
+            </tr>
+            <tr>
+                <td>pullOut</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>弹出指定扇形时触发</td>
+            </tr>
+            <tr>
+                <td>rotate</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项索引
+                </td>
+                <td>旋转指定扇形时触发</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <!-- Radar chart -->
+    <div class="bs-docs-section">
+    <div class="page-header">
+        <h1 id="radar">雷达图
+            <small></small>
+        </h1>
+    </div>
+    <p>普通的雷达图，支持圆形和菱形</p>
+
+    <div class="bs-example">
+        <div class="chart-title">手机A与手机B比较</div>
+        <div class="chart-lengend">
+            <div class="glyphicon glyphicon-stop" style="color: #72caed">A手机</div>
+            <div class="glyphicon glyphicon-stop" style="color: #a6d854">B手机</div>
+        </div>
+        <canvas id="radar_canvas" width="800" height="400"></canvas>
+    </div>
+
+    <h3 id="radar_usage">用法</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">//简单用法
+var radar = new JChart.Radar(data,'#canvasId');
+//更多配置
+var radar = new JChart.Radar(data,{
+    fill : false
+});
+//方法
+//事件
+line.on('tap.point',function(data,i,j){
+    alert(data);
+})</code></pre>
+    </div>
+
+    <h3 id="radar_config">配置项</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">var config = {
+    fill : true
+}
+var radar = new JChart.Radar(data,config);</code></pre>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th style="width: 50px;">类型</th>
+                <th style="width: 50px;">默认值</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- scale -->
+            <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
+                <td>showScaleLabel</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度值</td>
+            </tr>
+            <tr>
+                <td>scaleLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.3)</td>
+                <td>xy轴刻度线的颜色</td>
+            </tr>
+            <tr>
+                <td>scaleLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>刻度线宽度</td>
+            </tr>
+            <tr>
+                <td>scale</td>
+                <td>Object</td>
+                <td>null</td>
+                <td>自定义Y轴刻度值，有三个属性： <br>
+                    step : 10(刻度的个数)<br>
+                    stepValue : 10(每两个刻度线之间的差值)<br>
+                    start : 0(起始刻度值)
+                </td>
+            </tr>
+            <tr>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>刻度值字体</td>
+            </tr>
+            <tr>
+                <td>showText</td>
+                <td>String</td>
+                <td>false</td>
+                <td>是否显示数据文本(显示在连接点上)</td>
+            </tr>
+            <tr>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
+            </tr>
+            <tr>
+                <td>showGridLine</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示网格线</td>
+            </tr>
+            <tr>
+                <td>gridLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.5)</td>
+                <td>网格线颜色</td>
+            </tr>
+            <tr>
+                <td>gridLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>网格线宽度</td>
+            </tr>
+
+            <!-- radar -->
+            <tr>
+                <td>graphShape</td>
+                <td>String</td>
+                <td>diamond</td>
+                <td>图形形状<br>diamond:菱形<br>circle:圆形</td>
+            </tr>
+            <tr>
+                <td>showAngleLine</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示角度分割线</td>
+            </tr>
+            <tr>
+                <td>angleLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.1)</td>
+                <td>角度分割线颜色</td>
+            </tr>
+            <tr>
+                <td>angleLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>角度分割线宽度</td>
+            </tr>
+            <tr>
+                <td>showPoint</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示线的连接点</td>
+            </tr>
+            <tr>
+                <td>pointRadius</td>
+                <td>Number</td>
+                <td>3</td>
+                <td>连接圆点半径</td>
+            </tr>
+            <tr>
+                <td>pointBorderWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>连接点的边框宽度</td>
+            </tr>
+            <tr>
+                <td>pointClickBounds</td>
+                <td>Number</td>
+                <td>20</td>
+                <td>连接点的点击范围(方便手指触摸)</td>
+            </tr>
+            <tr>
+                <td>lineWidth</td>
+                <td>Number</td>
+                <td>2</td>
+                <td>连接线的宽度</td>
+            </tr>
+            <tr>
+                <td>fill</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否填充为面积图</td>
+            </tr>
+            <tr>
+                <td>scaleShowLabelBackdrop</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度文本背景</td>
+            </tr>
+            <tr>
+                <td>scaleBackdropColor</td>
+                <td>String</td>
+                <td>rgba(255,255,255,0.75)</td>
+                <td>刻度背景颜色</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>drawScaleFirst</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>优先画刻度值</td>
+            </tr>
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="radar_method">方法</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th>参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>refresh</td>
+                <td><a href="#radar_config">config</a>:同配置参数</td>
+                <td>重新绘制图表，可以采用新的配置项</td>
+            </tr>
+            <tr>
+                <td>load</td>
+                <td>
+                    data : 新数据集<br>
+                    <a href="#radar_config">config</a>:同配置参数（可选）</td>
+                <td>载入新的数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="radar_event">事件</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th >参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>renderYLabel</td>
+                <td>
+                    value:Y轴刻度值
+                </td>
+                <td>渲染Y轴刻度值时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    value:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>tap.point</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项在数据子集中索引<br>
+                    j: 子集在总数据集中的索引
+                </td>
+                <td>点击连接线的点触发</td>
+            </tr>
+            <tr>
+                <td>tap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>点击图表时触发</td>
+            </tr>
+            <tr>
+                <td>longTap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>长按图表时触发</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <!-- polar chart -->
+    <div class="bs-docs-section">
+    <div class="page-header">
+        <h1 id="polar">玫瑰图
+            <small></small>
+        </h1>
+    </div>
+    <p>简单的玫瑰图</p>
+
+    <div class="bs-example">
+        <div class="chart-title">网民上网时间分布</div>
+        <canvas id="polar_canvas" width="800" height="400"></canvas>
+    </div>
+
+    <h3 id="polar_usage">用法</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">//简单用法
+var polar = new JChart.Line(data,'#canvasId');
+//更多配置
+var polar = new JChart.Polar(data,{
+    showSegmentBorder : false
+});
+//方法
+//事件
+polar.on('tap.segment',function(data,i){
+    alert(data);
+})</code></pre>
+    </div>
+    <h3 id="polar_config">配置项</h3>
+    <div class="highlight">
+            <pre><code class="language-js javascript">var config = {
+    showSegmentBorder : true
+}
+var polar = new JChart.Polar(data,config);</code></pre>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th style="width: 50px;">类型</th>
+                <th style="width: 50px;">默认值</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- scale -->
+            <tr>
+                <td>bgColor</td>
+                <td>String</td>
+                <td>#fff</td>
+                <td>图表背景</td>
+            </tr>
+            <tr>
+                <td>showScaleLabel</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度值</td>
+            </tr>
+            <tr>
+                <td>scaleLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.3)</td>
+                <td>xy轴刻度线的颜色</td>
+            </tr>
+            <tr>
+                <td>scaleLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>刻度线宽度</td>
+            </tr>
+            <tr>
+                <td>scale</td>
+                <td>Object</td>
+                <td>null</td>
+                <td>自定义Y轴刻度值，有三个属性： <br>
+                    step : 10(刻度的个数)<br>
+                    stepValue : 10(每两个刻度线之间的差值)<br>
+                    start : 0(起始刻度值)
+                </td>
+            </tr>
+            <tr>
+                <td>scaleFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>刻度值字体</td>
+            </tr>
+            <tr>
+                <td>showText</td>
+                <td>String</td>
+                <td>true</td>
+                <td>是否显示数据文本</td>
+            </tr>
+            <tr>
+                <td>textFont</td>
+                <td>Object</td>
+                <td>
+                    family : 'Arial'<br>
+                    size : 16<br>
+                    style : 'normal'<br>
+                    color : '#5b5b5b'<br>
+                    textAlign : 'center'<br>
+                    textBaseLine : 'Middle'<br>
+                </td>
+                <td>数据文本字体样式</td>
+            </tr>
+            <tr>
+                <td>showGridLine</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示网格线</td>
+            </tr>
+            <tr>
+                <td>gridLineColor</td>
+                <td>String</td>
+                <td>rgba(0,0,0,.05)</td>
+                <td>网格线颜色</td>
+            </tr>
+            <tr>
+                <td>gridLineWidth</td>
+                <td>Number</td>
+                <td>1</td>
+                <td>网格线宽度</td>
+            </tr>
+
+            <!-- polar -->
+            <tr>
+                <td>showScaleLabelBackdrop</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示刻度文本背景</td>
+            </tr>
+            <tr>
+                <td>scaleBackdropColor</td>
+                <td>String</td>
+                <td>rgba(255,255,255,0.75)</td>
+                <td>刻度背景颜色</td>
+            </tr>
+            <tr>
+                <td>showSegmentBorder</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否显示扇形边框</td>
+            </tr>
+            <tr>
+                <td>segmentBorderWidth</td>
+                <td>Number</td>
+                <td>2</td>
+                <td>扇形边框宽度</td>
+            </tr>
+            <tr>
+                <td>segmentBorderColor</td>
+                <td>Strng</td>
+                <td>#fff</td>
+                <td>扇形边框颜色</td>
+            </tr>
+            <tr>
+                <td>animateRotate</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启旋转动画</td>
+            </tr>
+            <tr>
+                <td>animateScale</td>
+                <td>Boolean</td>
+                <td>false</td>
+                <td>是否开启缩放动画</td>
+            </tr>
+            <!--chart-->
+            <tr>
+                <td>animation</td>
+                <td>Boolean</td>
+                <td>true</td>
+                <td>是否开启动画</td>
+            </tr>
+            <tr>
+                <td>animationSteps</td>
+                <td>Number</td>
+                <td>60</td>
+                <td>动画帧数</td>
+            </tr>
+            <tr>
+                <td>animationEasing</td>
+                <td>String</td>
+                <td>easeOutBounce</td>
+                <td>动画函数</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="polar_method">方法</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th>参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>refresh</td>
+                <td><a href="#polar_config">config</a>:同配置参数</td>
+                <td>重新绘制图表，可以采用新的配置项</td>
+            </tr>
+            <tr>
+                <td>load</td>
+                <td>
+                    data : 新数据集<br>
+                    <a href="#polar_config">config</a>:同配置参数（可选）</td>
+                <td>载入新的数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h3 id="polar_event">事件</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th style="width: 100px;">名称</th>
+                <th >参数</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>renderText</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项在数据集中索引
+                </td>
+                <td>渲染数据项显示文本时触发，返回值会覆盖原来的值</td>
+            </tr>
+            <tr>
+                <td>tap.pie</td>
+                <td>
+                    data:数据项<br>
+                    i : 数据项在数据集中索引
+                </td>
+                <td>点击扇形时触发</td>
+            </tr>
+            <tr>
+                <td>tap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>点击图表时触发</td>
+            </tr>
+            <tr>
+                <td>longTap</td>
+                <td>
+                    x:触摸点距离图表左侧的距离<br>
+                    y:触摸点距离图表顶部的距离
+                </td>
+                <td>长按图表时触发</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+</div>
+</div>
+
+</div>
+
+<!-- Footer
+================================================== -->
+<footer class="bs-footer" role="contentinfo">
+    <div class="container">
+        <p>Designed and built with all the love in the world by <a href="http://twitter.com/mdo"
+                                                                   target="_blank">@mdo</a> and <a
+                href="http://twitter.com/fat" target="_blank">@fat</a>.</p>
+
+        <p>Code licensed under MIT, documentation under CC BY 3.0.</p>
+        <ul class="footer-links">
+            <li>当前版本： v0.1</li>
+            <li class="muted">·</li>
+            <li><a href="index.html">Jingle Chart</a></li>
+            <li class="muted">·</li>
+            <li><a href="http://vycool.com/Jinlge">Jingle UI</a></li>
+        </ul>
+    </div>
+</footer>
+
+<script src="js/jquery-1.10.2.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="js/application.js"></script>
+<script src="js/JChart.min.js"></script>
+<script src="js/doc.js"></script>
+</body>
 </html>

@@ -1,0 +1,38 @@
+
+.chart-title{
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+.chart-lengend{
+    border: 1px solid #b9b4b6;
+    margin:10px auto;
+    width: 120px;
+    border-radius:4px;
+    padding:5px;
+    display: -webkit-box;
+}
+.arrow_container{
+    border-radius: 4px;
+    border: 1px solid #C0392B;
+    background: #C0392B;
+    padding: 5px;
+    text-align: center;
+    position: relative;
+    width:300px;
+    color: #fff;
+    display: none;
+}
+.arrow_container:after{
+    bottom: 100%;
+    left: 50%;
+    margin-left: -20px;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-width: 20px;
+    border-bottom-color: #C0392B;
+}

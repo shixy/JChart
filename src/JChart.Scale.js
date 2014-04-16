@@ -44,7 +44,9 @@
             gridLineColor : "rgba(0,0,0,.1)",
             //网格线宽度
             gridLineWidth : 1
-        })
+        });
+        //数据偏移量-已经偏移
+        this.dataOffset = 0;
         this.scaleData = {
             x : 0,//圆点坐标
             y : 0,
@@ -328,7 +330,6 @@
             var _this = this,
             	touchDistanceX,//手指滑动偏移量
                 startPosition,//触摸初始位置记录
-                dataOffset = 0,//数据偏移量-已经偏移
                 currentOffset = 0,//当前一次滑动的偏移量
                 dataNum = this.config.datasetShowNumber,//每屏显示的数据条数
                 gestureStarted,
@@ -358,7 +359,7 @@
                 touchDistanceX = x - startPosition.x;
             	//每滑动xHop加载下一组数据
                 var totalLen = _this.data.labels.length;//数据总长度
-                var offset = dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
+                var offset = _this.dataOffset - Math.floor(touchDistanceX/_this.scaleData.xHop);
                 if(offset < 0 || offset == currentOffset||(offset+dataNum > totalLen))return;
                 currentOffset = offset;
                 console.log(offset);
@@ -369,7 +370,7 @@
             }
             function touchend(event){
                 gestureStarted = false;
-                dataOffset = currentOffset;
+                _this.dataOffset = currentOffset;
             }
         }
     }

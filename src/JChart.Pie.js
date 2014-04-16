@@ -117,7 +117,7 @@
             }
             percent = (percent * 100).toFixed(1)+'%';
             var xaxis = Math.cos(middAngle) * dis + x, yaxis = Math.sin(middAngle) * dis + y;
-            _this.drawText(percent,xaxis,yaxis,[d,data[3]]);
+            _this.drawText(percent,xaxis,yaxis,[d,data[3],data[4]]);
         }
         function drawDountText(){
             _this.ctx.fillText(_this.config.dountText,origin.x,origin.y,_this.config.dountFont);
@@ -202,13 +202,14 @@
             if ( currentOutIndex == i ) return;
             currentOutIndex = i;
             drawPie(1);
-            this.trigger('pullOut',[_this.data[i],i]);
+            this.trigger('pullOut',[_this.data[i],i,angleRanges[i][4]]);
         }
         /**
          * 旋转扇形块的中线指向6点钟方向
          * @param i 扇形索引
          */
         this.rotate = function(i){
+            if(_this.isAnimating)return;
             var middAngle = (angleRanges[i][0] + angleRanges[i][1]) / 2 + startAngle;
             var newRotateAngle = _this.config.rotateAngle-middAngle;
             if(_.isEqual(newRotateAngle,0))return;
@@ -216,7 +217,7 @@
             rotateAngle = newRotateAngle;
             this.doAnim(null,animRotate,function(){
                 startAngle += rotateAngle;
-                _this.trigger('rotate',[_this.data[i],i]);
+                _this.trigger('rotate',[_this.data[i],i,angleRanges[i][4]]);
             });
         }
         this.setDountText = function(text){
@@ -235,12 +236,12 @@
                 totalData += d.value;
             });
             calcAngel();
+            startAngle = _this.config.startAngle;
             if(noAnim){
                 drawPie(1);
             }else{
                 this.doAnim(null,drawPie);
             }
-            startAngle = _this.config.startAngle;
         }
         //计算原点位置及半径
         function calcOrigin(){

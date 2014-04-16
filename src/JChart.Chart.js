@@ -1,6 +1,10 @@
 ;(function(_){
     var Chart = function(){
+        //当前动画的状态
+        this.isAnimating = false;
         this.config = {
+            width : 0,
+            height : 0,
             bgColor : '#fff',
             //优先画刻度
             drawScaleFirst : true,
@@ -35,6 +39,12 @@
             }
             this.ctx = _.Canvas(this.config.id);
             var canvas = this.ctx.el;
+            this.config.width && (canvas.width = this.config.width);
+            this.config.height && (canvas.height = this.config.height);
+            if(this.config.fit){
+                //todo 自动计算高度宽度
+                //todo 检测 转屏 事件
+            }
             this.width = canvas.width;
             this.height = canvas.height;
             //High pixel density displays - multiply the size of the canvas height/width by the device pixel ratio, then scale.
@@ -54,6 +64,9 @@
             this.ctx.set('fillStyle',this.config.bgColor);
             this.ctx.fillRect(0,0,this.width,this.height);
         }
+        this.resize = function(w,h){
+
+        },
         /**
          * 清空画布后重新设置画布的背景
          */
@@ -62,24 +75,31 @@
             this.setBg();
         };
         /**
-         * 更新
+         * 重新刷新图表
          */
         this.refresh = function(config){
-            if(config){
-               _.extend(this.config,config);
-            }
-            this.draw();
+            this.update(null,config,true);
         };
         /**
          * 加载数据
          * @param data
          * @param config
          */
-        this.load = function(data,config){
-            this.data = data;
+        this.load = function(data){
+            this.update(data,null,false);
+        }
+        /**
+         * 更新图表
+         * @param data
+         * @param config
+         * @param animation
+         */
+        this.update = function(data,config,animation){
             config && _.extend(this.config,config);
+            data && (this.data = data);
+            this.dataOffset = 0;
             this.clear();
-            this.draw(true);
+            this.draw(animation);
         }
         this.mergeFont = function(key){
             if(key instanceof Array){
@@ -101,9 +121,10 @@
          * @param callback  执行成功回调函数
          */
         this.doAnim = function(drawScale,drawData,callback){
+            this.isAnimating = true;
             var config = this.config,_this = this;
             // 1/动画帧数
-            var animFrameAmount = (config.animation)? 1/ _.capValue(config.animationSteps,Number.MAX_VALUE,1) : 1,
+            var animFrameAmount = (config.animation)? 1/ _.capValue(config.animationSteps,1000,1) : 1,
             //动画效果
                 easingFunction = _.animationOptions[config.animationEasing],
             //动画完成率
@@ -113,20 +134,20 @@
             if (typeof drawScale !== "function") drawScale = function(){};
             _.requestAnimFrame.call(window,animLoop);
             function animLoop(){
-                //We need to check if the animation is incomplete (less than 1), or complete (1).
                 percentAnimComplete += animFrameAmount;
                 animateFrame();
-                //Stop the loop continuing forever
                 if (percentAnimComplete <= 1){
                     _.requestAnimFrame.call(window,animLoop);
                 }else{
+                    _this.isAnimating = false;
                     callback && callback.call(_this);
                     _this.trigger('animationComplete');
                 }
             };
             function animateFrame(){
                 _this.clear();
-                var animPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),null,0) : 1;
+                var animPercent =(config.animation)? _.capValue(easingFunction(percentAnimComplete),1,0) : 1;
+                drawData.call(_this,animPercent);
                 if(_this.config.drawScaleFirst){
                     drawScale.call(_this);
                     drawData.call(_this,animPercent);
@@ -160,13 +181,12 @@
             style && this.ctx.set(style);
             args = args ? [text].concat(args) : [text];
             var t = this.trigger('renderText',args);
-            t = t?t:text;
+            t = (t == null)?text:t;
             this.ctx.fillText(t,x,y);
         };
         //给chart添加tap longTap doubleTap事件
         this.bindTouchEvents = function(){
-            var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,
-	            offset = _.getOffset(this.ctx.el),
+            var touch = {},touchTimeout,longTapDelay = 750, longTapTimeout,now, delta,offset,
 	            hasTouch = 'ontouchstart' in window,
 				START_EV = hasTouch ? 'touchstart' : 'mousedown',
 				MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
@@ -184,6 +204,7 @@
                 e = e.touches ? e.touches[0] : e;
                 delta = now - (touch.last || now);
                 touchTimeout && clearTimeout(touchTimeout);
+                offset = _.getOffset(_this.ctx.el);
                 touch.x1 = e.pageX - offset.left;
                 touch.y1 = e.pageY - offset.top;
                 if (delta > 0 && delta <= 250) touch.isDoubleTap = true;
@@ -191,6 +212,7 @@
                 longTapTimeout = setTimeout(longTap, longTapDelay);
             }
             function touchmove(e){
+                if(!touch.last)return;
                 var ev = e.touches ? e.touches[0] : e;
                 touch.x2 = ev.pageX - offset.left;
                 touch.y2 = ev.pageY - offset.top;

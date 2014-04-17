@@ -1,5 +1,5 @@
 {
-    "name":"Jingle Chart",
+    "name":"JingleChart",
     "version":"0.1.0",
     "engines":{
         "node":">= 0.8.0"

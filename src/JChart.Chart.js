@@ -47,6 +47,9 @@
             }
             this.width = canvas.width;
             this.height = canvas.height;
+            //设置canvas背景颜色
+            canvas.style.background = this.config.bgColor;
+
             //High pixel density displays - multiply the size of the canvas height/width by the device pixel ratio, then scale.
             //如果设备为视网膜屏，将canvas按照设备像素比放大像素，然后再等比缩小
             if (window.devicePixelRatio) {
@@ -58,12 +61,7 @@
             }
             this.bindTouchEvents();
             this.bindEvents();
-            this.setBg();
         };
-        this.setBg = function(){
-            this.ctx.set('fillStyle',this.config.bgColor);
-            this.ctx.fillRect(0,0,this.width,this.height);
-        }
         this.resize = function(w,h){
 
         },
@@ -72,7 +70,6 @@
          */
         this.clear = function(){
             this.ctx.clear();
-            this.setBg();
         };
         /**
          * 重新刷新图表
@@ -99,7 +96,7 @@
             data && (this.data = data);
             this.dataOffset = 0;
             this.clear();
-            this.draw(animation);
+            this.draw(!animation);
         }
         this.mergeFont = function(key){
             if(key instanceof Array){

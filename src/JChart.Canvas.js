@@ -4,7 +4,7 @@
 ;(function(_){
     function Chain(el){
         //需要返回结果的方法，这些方法将不能进行后续的链式调用
-        var needReturnValueFn = ['isPointInPath','measureText','getImageData'];
+        var needReturnValueFn = ['isPointInPath','measureText','getImageData','createLinearGradient','createPattern','createRadialGradient','isPointInPath'];
         function Canvas(){
             this.el = el = (typeof el === 'string') ? document.getElementById(el) : el;
             this.ctx = el.getContext('2d');
@@ -61,9 +61,7 @@
              * @return this
              */
             fill : function (color) {
-                if (typeof color === 'string') {
-                    this.set('fillStyle', color);
-                }
+                color && this.set('fillStyle', color);
                 this.ctx.fill();
                 return this;
             },
@@ -73,7 +71,7 @@
              * @return this
              */
             stroke : function (color,width) {
-                if (typeof color === 'string') {
+                if (color) {
                     this.set('strokeStyle', color);
                     width && this.set('lineWidth',width);
                 }
@@ -118,8 +116,8 @@
             clear : function (x, y, w, h) {
                 x = x || 0;
                 y = y || 0;
-                w = w || this.width;
-                h = h || this.height;
+                w = w || this.el.width;
+                h = h || this.el.height;
                 this.ctx.clearRect(x, y, w, h);
                 return this;
             },

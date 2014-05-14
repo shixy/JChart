@@ -43,7 +43,10 @@
             //网格线颜色
             gridLineColor : "rgba(0,0,0,.1)",
             //网格线宽度
-            gridLineWidth : 1
+            gridLineWidth : 1,
+            //水平线{value : 50,color : #fff,width : 1}
+            horizonLine : null
+
         });
         //数据偏移量-已经偏移
         this.dataOffset = 0;
@@ -186,6 +189,8 @@
             //画Y轴
             ctx.line(scale.x,scale.y+3, scale.x,scale.y-scale.yHeight, true);
 
+            //todo  设置主体部分背景颜色  渐变？？？
+
             //画X轴刻度文本
             if (scale.labelRotate > 0){
                 ctx.save();
@@ -223,6 +228,12 @@
                 cfg.showGridLine && ctx.line(scale.x,y,scale.x + scale.xWidth,y, true);
                 cfg.showScaleLabel && ctx.fillText(scale.yScaleValue.labels[j],scale.x-P_Y/2,y);
             }
+            //绘制水平线
+            if(cfg.horizonLine){
+                var y = scale.y - this.calcOffset(cfg.horizonLine.value,scale.yScaleValue,scale.yHop);
+                ctx.line(scale.x,y,scale.x + scale.xWidth,y, cfg.horizonLine.color || '#E74C3C',cfg.horizonLine.width||1);
+            }
+
         }
 
         this.initScale = function(showX){

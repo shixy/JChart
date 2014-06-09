@@ -114,11 +114,17 @@
              * @return this
              */
             clear : function (x, y, w, h) {
+                var c = this.el;
                 x = x || 0;
                 y = y || 0;
                 w = w || this.el.width;
                 h = h || this.el.height;
                 this.ctx.clearRect(x, y, w, h);
+                //android4.1+下经常会出现clear无效，大多数情况出现在loop函数中
+                c.style.opacity = 0.99;
+                setTimeout(function() {
+                    c.style.opacity = 1;
+                }, 1);
                 return this;
             },
             /**
